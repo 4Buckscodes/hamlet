@@ -1,0 +1,32 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#091118"/>
+      <stop offset="1" stop-color="#0F1A22"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2DCA4"/>
+      <stop offset="1" stop-color="#C39852"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1060" cy="100" r="220" fill="#123D39" fill-opacity="0.38"/>
+  <circle cx="250" cy="540" r="260" fill="#C39852" fill-opacity="0.10"/>
+
+  <rect x="82" y="80" width="200" height="200" rx="54" fill="#0E1822" stroke="rgba(255,255,255,0.12)"/>
+  <path d="M150 230V122H186V200H302V122H338V230H302V182H186V230H150Z" fill="url(#gold)"/>
+
+  <text x="86" y="360" fill="#F2EEE7" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" letter-spacing="-2">HAMLET</text>
+  <text x="90" y="430" fill="#D6C9AE" font-family="Arial, sans-serif" font-size="28" font-weight="600" letter-spacing="4">FOR YOUR SHORTLETS</text>
+
+  <rect x="90" y="470" width="250" height="72" rx="36" fill="url(#gold)"/>
+  <text x="142" y="517" fill="#0C141B" font-family="Arial, sans-serif" font-size="28" font-weight="700">Explore Stays</text>
+
+  <text x="620" y="250" fill="#F2EEE7" font-family="Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="5">SHORTLETS, WITH ACCOUNTABILITY</text>
+  <text x="620" y="330" fill="#EFE8DD" font-family="Georgia, serif" font-size="64" font-weight="700">Where are you staying?</text>
+  <text x="620" y="390" fill="#D0C9BD" font-family="Arial, sans-serif" font-size="28">Find a place you can trust. Book a stay without the usual uncertainty.</text>
+
+  <rect x="620" y="430" width="240" height="110" rx="22" fill="#101B26" stroke="rgba(255,255,255,0.10)"/>
+  <text x="648" y="482" fill="#E7D5A0" font-family="Arial, sans-serif" font-size="20" letter-spacing="3">DECEMBER</text>
+  <text x="648" y="520" fill="#F4EFE9" font-family="Arial, sans-serif" font-size="34" font-weight="700">Lagos</text>
+</svg>
