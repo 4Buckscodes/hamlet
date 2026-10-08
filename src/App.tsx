@@ -117,6 +117,16 @@ function App() {
   const [hostSubmitted, setHostSubmitted] = useState(false)
   const [researchSubmitted, setResearchSubmitted] = useState(false)
   const [researchForm, setResearchForm] = useState(initialResearchForm)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    problem: false,
+    ecosystem: false,
+    horatio: false,
+    launch: false,
+    validation: false,
+    research: false,
+    guest: false,
+    hosts: false,
+  })
   const [hostStep, setHostStep] = useState(0)
   const [hostForm, setHostForm] = useState({
     name: '',
@@ -194,6 +204,13 @@ function App() {
       interview: payload.interview,
     })
     setHostSubmitted(true)
+  }
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }))
   }
 
   const handleResearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -487,445 +504,497 @@ function App() {
           </div>
         </section>
 
-        <section className="section-shell problem-section">
-          <div className="section-header center-header">
+        <div className={`collapsible-shell ${expandedSections.problem ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('problem')} aria-expanded={expandedSections.problem}>
             <span className="eyebrow">The problem</span>
-            <h2>THE PROBLEM WITH THE WAY THINGS WORK TODAY</h2>
-          </div>
+            <strong>THE PROBLEM WITH THE WAY THINGS WORK TODAY</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
 
-          <div className="problem-stack">
-            <div className="problem-box">“Is it actually available?”</div>
-            <div className="problem-box">“Is the price still the same?”</div>
-            <div className="problem-box">“Who am I sending this money to?”</div>
-            <div className="problem-box">“What happens if something goes wrong?”</div>
-            <div className="problem-box">“Who handles the guest?”</div>
-            <div className="problem-box">“Who handles the property?”</div>
-          </div>
+          <div className="collapsible-body">
+            <section className="section-shell problem-section">
+              <div className="problem-stack">
+                <div className="problem-box">“Is it actually available?”</div>
+                <div className="problem-box">“Is the price still the same?”</div>
+                <div className="problem-box">“Who am I sending this money to?”</div>
+                <div className="problem-box">“What happens if something goes wrong?”</div>
+                <div className="problem-box">“Who handles the guest?”</div>
+                <div className="problem-box">“Who handles the property?”</div>
+              </div>
 
-          <div className="solution-banner">
-            <h3>HAMLET IS BUILDING THE ANSWER.</h3>
+              <div className="solution-banner">
+                <h3>HAMLET IS BUILDING THE ANSWER.</h3>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section className="section-shell ecosystem-section">
-          <div className="section-header center-header">
+        <div className={`collapsible-shell ${expandedSections.ecosystem ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('ecosystem')} aria-expanded={expandedSections.ecosystem}>
             <span className="eyebrow">The ecosystem</span>
-            <h2>THE HAMLET ECOSYSTEM</h2>
-          </div>
+            <strong>THE HAMLET ECOSYSTEM</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
 
-          <div className="ecosystem-grid">
-            <article className="actor-card">
-              <div className="actor-icon">G</div>
-              <h3>GUEST</h3>
-              <p>Finds → compares → books → stays → reviews</p>
-            </article>
-            <article className="actor-card">
-              <div className="actor-icon">O</div>
-              <h3>OWNER</h3>
-              <p>Lists → manages → receives bookings → earns</p>
-            </article>
-            <article className="actor-card">
-              <div className="actor-icon">H</div>
-              <h3>HAMLET</h3>
-              <p>Verifies → facilitates → protects → learns</p>
-            </article>
-          </div>
-        </section>
-
-        <section className="section-shell horatio-section">
-          <div className="horatio-grid">
-            <div>
-              <span className="eyebrow">AI companion</span>
-              <h2>MEET HORATIO.</h2>
-              <p className="lead-small">
-                Your intelligent companion for finding and running shortlets.
-              </p>
-              <ul className="check-list">
-                <li>Tell Horatio what you&apos;re looking for.</li>
-                <li>Or let Horatio help turn your property information into a better listing.</li>
-              </ul>
-            </div>
-            <div className="horatio-panel">
-              <div className="chat-bubble guest-bubble">
-                “I need a three-bedroom in Lekki for four friends.”
+          <div className="collapsible-body">
+            <section className="section-shell ecosystem-section">
+              <div className="ecosystem-grid">
+                <article className="actor-card">
+                  <div className="actor-icon">G</div>
+                  <h3>GUEST</h3>
+                  <p>Finds → compares → books → stays → reviews</p>
+                </article>
+                <article className="actor-card">
+                  <div className="actor-icon">O</div>
+                  <h3>OWNER</h3>
+                  <p>Lists → manages → receives bookings → earns</p>
+                </article>
+                <article className="actor-card">
+                  <div className="actor-icon">H</div>
+                  <h3>HAMLET</h3>
+                  <p>Verifies → facilitates → protects → learns</p>
+                </article>
               </div>
-              <div className="chat-bubble owner-bubble">
-                “Here&apos;s the information for my apartment. Turn it into a listing.”
-              </div>
-              <p className="footnote">
-                Horatio only works with known information and asks when details are missing.
-              </p>
-            </div>
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section className="section-shell launch-assets-section">
-          <div className="section-header center-header">
+        <div className={`collapsible-shell ${expandedSections.horatio ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('horatio')} aria-expanded={expandedSections.horatio}>
+            <span className="eyebrow">AI companion</span>
+            <strong>MEET HORATIO.</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
+
+          <div className="collapsible-body">
+            <section className="section-shell horatio-section">
+              <div className="horatio-grid">
+                <div>
+                  <p className="lead-small">
+                    Your intelligent companion for finding and running shortlets.
+                  </p>
+                  <ul className="check-list">
+                    <li>Tell Horatio what you&apos;re looking for.</li>
+                    <li>Or let Horatio help turn your property information into a better listing.</li>
+                  </ul>
+                </div>
+                <div className="horatio-panel">
+                  <div className="chat-bubble guest-bubble">
+                    “I need a three-bedroom in Lekki for four friends.”
+                  </div>
+                  <div className="chat-bubble owner-bubble">
+                    “Here&apos;s the information for my apartment. Turn it into a listing.”
+                  </div>
+                  <p className="footnote">
+                    Horatio only works with known information and asks when details are missing.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div className={`collapsible-shell ${expandedSections.launch ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('launch')} aria-expanded={expandedSections.launch}>
             <span className="eyebrow">Launch assets</span>
-            <h2>READY FOR THE FIRST WAVE.</h2>
-          </div>
+            <strong>READY FOR THE FIRST WAVE.</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
 
-          <div className="launch-assets-grid">
-            <div className="launch-copy">
-              <article className="asset-card">
-                <span className="asset-kicker">Homepage</span>
-                <h3>Premium brand front door</h3>
-                <p>Clear value proposition, founder honesty, and trust-first messaging for Nigeria's shortlet market.</p>
-              </article>
+          <div className="collapsible-body">
+            <section className="section-shell launch-assets-section">
+              <div className="launch-assets-grid">
+                <div className="launch-copy">
+                  <article className="asset-card">
+                    <span className="asset-kicker">Homepage</span>
+                    <h3>Premium brand front door</h3>
+                    <p>Clear value proposition, founder honesty, and trust-first messaging for Nigeria's shortlet market.</p>
+                  </article>
 
-              <article className="asset-card">
-                <span className="asset-kicker">Lead capture</span>
-                <h3>Supply + demand in one funnel</h3>
-                <p>Founding host applications and guest early-access flows capture signal before the broader platform is live.</p>
-              </article>
+                  <article className="asset-card">
+                    <span className="asset-kicker">Lead capture</span>
+                    <h3>Supply + demand in one funnel</h3>
+                    <p>Founding host applications and guest early-access flows capture signal before the broader platform is live.</p>
+                  </article>
 
-              <article className="asset-card">
-                <span className="asset-kicker">Market learning</span>
-                <h3>Research that shapes the roadmap</h3>
-                <p>Every answer tells us where trust breaks down, what owners need, and what guests actually care about.</p>
-              </article>
-            </div>
-
-            <div className="device-frame" aria-label="HAMLET product screenshot mockup">
-              <div className="device-header">
-                <span className="dot" />
-                <span className="dot" />
-                <span className="dot" />
-              </div>
-
-              <div className="device-screen">
-                <div className="screen-topbar">
-                  <span>HAMLET</span>
-                  <span>Founding phase</span>
+                  <article className="asset-card">
+                    <span className="asset-kicker">Market learning</span>
+                    <h3>Research that shapes the roadmap</h3>
+                    <p>Every answer tells us where trust breaks down, what owners need, and what guests actually care about.</p>
+                  </article>
                 </div>
 
-                <div className="screen-hero">
-                  <strong>WHERE ARE YOU STAYING?</strong>
-                  <p>Find a place you can trust.</p>
-                </div>
+                <div className="device-frame" aria-label="HAMLET product screenshot mockup">
+                  <div className="device-header">
+                    <span className="dot" />
+                    <span className="dot" />
+                    <span className="dot" />
+                  </div>
 
-                <div className="screen-actions">
-                  <span>Explore Stays</span>
-                  <span>List Your Property</span>
-                </div>
+                  <div className="device-screen">
+                    <div className="screen-topbar">
+                      <span>HAMLET</span>
+                      <span>Founding phase</span>
+                    </div>
 
-                <div className="screen-card">
-                  <div>
-                    <small>December in Lagos</small>
-                    <strong>Quiet stays. Real accountability.</strong>
+                    <div className="screen-hero">
+                      <strong>WHERE ARE YOU STAYING?</strong>
+                      <p>Find a place you can trust.</p>
+                    </div>
+
+                    <div className="screen-actions">
+                      <span>Explore Stays</span>
+                      <span>List Your Property</span>
+                    </div>
+
+                    <div className="screen-card">
+                      <div>
+                        <small>December in Lagos</small>
+                        <strong>Quiet stays. Real accountability.</strong>
+                      </div>
+                    </div>
+
+                    <div className="screen-grid">
+                      <div />
+                      <div />
+                      <div />
+                    </div>
                   </div>
                 </div>
-
-                <div className="screen-grid">
-                  <div />
-                  <div />
-                  <div />
-                </div>
               </div>
-            </div>
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section className="section-shell validation-section">
-          <div className="section-header center-header">
+        <div className={`collapsible-shell ${expandedSections.validation ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('validation')} aria-expanded={expandedSections.validation}>
             <span className="eyebrow">Market validation</span>
-            <h2>HELP US BUILD IT RIGHT.</h2>
-          </div>
+            <strong>HELP US BUILD IT RIGHT.</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
 
-          <div className="validation-grid">
-            <article className="mini-card">
-              <h3>I OWN A SHORTLET</h3>
-              <p>Tell us how you operate.</p>
-            </article>
-            <article className="mini-card">
-              <h3>I MANAGE SHORTLETS</h3>
-              <p>Tell us what happens behind the scenes.</p>
-            </article>
-            <article className="mini-card">
-              <h3>I BOOK SHORTLETS</h3>
-              <p>Tell us what makes you trust a stay.</p>
-            </article>
-          </div>
-        </section>
-
-        <section className="section-shell research-section" id="research">
-          <div className="research-layout">
-            <div className="research-copy">
-              <span className="eyebrow">Research form</span>
-              <h2>HELP US BUILD HAMLET AROUND REAL BUSINESS REALITY.</h2>
-              <p>
-                We&apos;re building HAMLET for the people who actually live and work in the shortlet industry.
-              </p>
-              <p>
-                If you own, manage, invest in, or regularly book shortlets in Nigeria, we&apos;d like to hear from you.
-              </p>
-            </div>
-
-            <form className="research-form" onSubmit={handleResearchSubmit}>
-              {researchSubmitted ? (
-                <div className="success-box">
-                  <h3>THANK YOU FOR HELPING US BUILD IT RIGHT.</h3>
-                  <p>Your answers will directly influence what HAMLET builds next.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="form-grid">
-                    <label className="field">
-                      <span>User type</span>
-                      <select value={researchForm.userType} onChange={(event) => handleResearchUpdate('userType', event.target.value)}>
-                        {researchOptions.userType.map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="field">
-                      <span>City</span>
-                      <select value={researchForm.city} onChange={(event) => handleResearchUpdate('city', event.target.value)}>
-                        {researchOptions.cities.map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="field">
-                      <span>Experience</span>
-                      <input value={researchForm.experience} onChange={(event) => handleResearchUpdate('experience', event.target.value)} placeholder="1-2 years" />
-                    </label>
-
-                    <label className="field">
-                      <span>Number of properties</span>
-                      <input value={researchForm.propertyCount} onChange={(event) => handleResearchUpdate('propertyCount', event.target.value)} placeholder="1" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Booking behaviour</span>
-                      <input value={researchForm.bookingBehavior} onChange={(event) => handleResearchUpdate('bookingBehavior', event.target.value)} placeholder="Direct booking + Airbnb" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Biggest problems</span>
-                      <textarea value={researchForm.biggestProblems} onChange={(event) => handleResearchUpdate('biggestProblems', event.target.value)} placeholder="What is causing friction in your shortlet business?" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Existing tools</span>
-                      <input value={researchForm.existingTools} onChange={(event) => handleResearchUpdate('existingTools', event.target.value)} placeholder="What tools or systems do you use today?" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Existing platforms</span>
-                      <input value={researchForm.existingPlatforms} onChange={(event) => handleResearchUpdate('existingPlatforms', event.target.value)} placeholder="Airbnb, booking apps, spreadsheets, WhatsApp..." />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>What they wish worked better</span>
-                      <textarea value={researchForm.wantsBetter} onChange={(event) => handleResearchUpdate('wantsBetter', event.target.value)} placeholder="What would make the experience easier or more trustworthy?" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Biggest frustration</span>
-                      <textarea value={researchForm.mainFrustration} onChange={(event) => handleResearchUpdate('mainFrustration', event.target.value)} placeholder="What drives you mad about the current setup?" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>What&apos;s the one thing you wish someone would fix about the shortlet business?</span>
-                      <textarea value={researchForm.mainFrustration} onChange={(event) => handleResearchUpdate('mainFrustration', event.target.value)} placeholder="The one thing that matters most..." />
-                    </label>
-
-                    <label className="field">
-                      <span>Willingness to participate in a 15-minute interview</span>
-                      <select value={researchForm.interview} onChange={(event) => handleResearchUpdate('interview', event.target.value)}>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </label>
-
-                    <label className="field">
-                      <span>WhatsApp / email</span>
-                      <input value={researchForm.contact} onChange={(event) => handleResearchUpdate('contact', event.target.value)} placeholder="+234... or email" />
-                    </label>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary submit-btn" onClick={() => trackEvent('research_started')}>
-                    Share your perspective
-                  </button>
-                </>
-              )}
-            </form>
-          </div>
-        </section>
-
-        <section className="section-shell guest-section">
-          <div className="guest-layout">
-            <div className="guest-copy">
-              <span className="eyebrow">Guest early access</span>
-              <h2>LOOKING FOR A DECEMBER STAY?</h2>
-              <p>Tell us where you&apos;re going and what you&apos;re looking for.</p>
-            </div>
-
-            <form className="guest-form" onSubmit={handleGuestSubmit}>
-              {guestSubmitted ? (
-                <div className="success-box">
-                  <h3>YOU&apos;RE ON THE LIST.</h3>
-                  <p>We&apos;ll use what you&apos;ve told us to help match you with suitable HAMLET stays as they become available.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="form-grid">
-                    <label className="field">
-                      <span>Name</span>
-                      <input value={guestForm.name} onChange={(event) => handleGuestUpdate('name', event.target.value)} placeholder="Your name" />
-                    </label>
-
-                    <label className="field">
-                      <span>WhatsApp</span>
-                      <input value={guestForm.whatsapp} onChange={(event) => handleGuestUpdate('whatsapp', event.target.value)} placeholder="+234..." />
-                    </label>
-
-                    <label className="field">
-                      <span>City</span>
-                      <input value={guestForm.city} onChange={(event) => handleGuestUpdate('city', event.target.value)} placeholder="Lagos" />
-                    </label>
-
-                    <label className="field">
-                      <span>Dates</span>
-                      <input value={guestForm.dates} onChange={(event) => handleGuestUpdate('dates', event.target.value)} placeholder="12-18 Dec" />
-                    </label>
-
-                    <label className="field">
-                      <span>Guests</span>
-                      <input value={guestForm.guests} onChange={(event) => handleGuestUpdate('guests', event.target.value)} placeholder="2" />
-                    </label>
-
-                    <label className="field">
-                      <span>Budget</span>
-                      <input value={guestForm.budget} onChange={(event) => handleGuestUpdate('budget', event.target.value)} placeholder="₦120,000" />
-                    </label>
-
-                    <label className="field">
-                      <span>Stay type</span>
-                      <input value={guestForm.stayType} onChange={(event) => handleGuestUpdate('stayType', event.target.value)} placeholder="Couple / Family / Business" />
-                    </label>
-
-                    <label className="field full-width">
-                      <span>Preferences</span>
-                      <textarea value={guestForm.preferences} onChange={(event) => handleGuestUpdate('preferences', event.target.value)} placeholder="Quiet, close to the airport, pool, parking, family-friendly..." />
-                    </label>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary submit-btn" onClick={() => trackEvent('guest_interest_started')}>
-                    Help Me Find a Stay
-                  </button>
-                </>
-              )}
-            </form>
-          </div>
-        </section>
-
-        <section className="section-shell hosts-section" id="hosts">
-          <div className="hosts-copy">
-            <span className="eyebrow">For owners & managers</span>
-            <h2>OWN OR MANAGE A SHORTLET?</h2>
-            <p>
-              HAMLET is building a better way for Nigerian shortlet owners to list, manage and grow their properties.
-            </p>
-            <p className="strong-line">Become one of our Founding Hosts.</p>
-            <ul className="benefits-list">
-              <li>Early access</li>
-              <li>Priority onboarding</li>
-              <li>Founding Host recognition</li>
-              <li>Launch visibility</li>
-              <li>Early product access</li>
-              <li>Potential founding-period commercial incentives</li>
-            </ul>
-          </div>
-
-          <form className="host-form" onSubmit={handleHostSubmit}>
-            {hostSubmitted ? (
-              <div className="success-box large-success">
-                <h3>YOU&apos;RE IN THE FOUNDING CIRCLE.</h3>
-                <p>We&apos;ll be in touch to learn about your property and help you get ready for HAMLET.</p>
+          <div className="collapsible-body">
+            <section className="section-shell validation-section">
+              <div className="validation-grid">
+                <article className="mini-card">
+                  <h3>I OWN A SHORTLET</h3>
+                  <p>Tell us how you operate.</p>
+                </article>
+                <article className="mini-card">
+                  <h3>I MANAGE SHORTLETS</h3>
+                  <p>Tell us what happens behind the scenes.</p>
+                </article>
+                <article className="mini-card">
+                  <h3>I BOOK SHORTLETS</h3>
+                  <p>Tell us what makes you trust a stay.</p>
+                </article>
               </div>
-            ) : (
-              <>
-                <div className="stepper" aria-label="Founding host steps">
-                  {hostSteps.map((step, index) => (
-                    <button
-                      key={step.title}
-                      type="button"
-                      className={hostStep === index ? 'step-badge active' : 'step-badge'}
-                      onClick={() => setHostStep(index)}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+            </section>
+          </div>
+        </div>
+
+        <div className={`collapsible-shell ${expandedSections.research ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('research')} aria-expanded={expandedSections.research}>
+            <span className="eyebrow">Research form</span>
+            <strong>HELP US BUILD HAMLET AROUND REAL BUSINESS REALITY.</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
+
+          <div className="collapsible-body">
+            <section className="section-shell research-section" id="research">
+              <div className="research-layout">
+                <div className="research-copy">
+                  <p>
+                    We&apos;re building HAMLET for the people who actually live and work in the shortlet industry.
+                  </p>
+                  <p>
+                    If you own, manage, invest in, or regularly book shortlets in Nigeria, we&apos;d like to hear from you.
+                  </p>
                 </div>
 
-                <h3 className="step-title">{currentStep.title}</h3>
-
-                <div className="form-grid">
-                  {currentStep.fields.map((field) => (
-                    <label key={field.key} className={field.type === 'textarea' || field.key === 'details' ? 'field full-width' : 'field'}>
-                      <span>{field.label}</span>
-                      {field.type === 'textarea' ? (
-                        <textarea
-                          value={hostForm[field.key as keyof typeof hostForm] as string}
-                          onChange={(event) => handleHostUpdate(field.key, event.target.value)}
-                          placeholder={field.placeholder}
-                        />
-                      ) : field.type === 'select' ? (
-                        <select
-                          value={hostForm[field.key as keyof typeof hostForm] as string}
-                          onChange={(event) => handleHostUpdate(field.key, event.target.value)}
-                        >
-                          {field.options?.map((option) => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type={field.type}
-                          value={hostForm[field.key as keyof typeof hostForm] as string}
-                          onChange={(event) => handleHostUpdate(field.key, event.target.value)}
-                          placeholder={field.placeholder}
-                        />
-                      )}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="host-actions">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    disabled={hostStep === 0}
-                    onClick={() => setHostStep((current) => Math.max(0, current - 1))}
-                  >
-                    Back
-                  </button>
-
-                  {hostStep < hostSteps.length - 1 ? (
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={() => {
-                        trackEvent('founding_host_started', { step: hostStep + 1 })
-                        setHostStep((current) => Math.min(hostSteps.length - 1, current + 1))
-                      }}
-                    >
-                      Next
-                    </button>
+                <form className="research-form" onSubmit={handleResearchSubmit}>
+                  {researchSubmitted ? (
+                    <div className="success-box">
+                      <h3>THANK YOU FOR HELPING US BUILD IT RIGHT.</h3>
+                      <p>Your answers will directly influence what HAMLET builds next.</p>
+                    </div>
                   ) : (
-                    <button type="submit" className="btn btn-primary" onClick={submitHost}>
-                      Become a Founding Host
-                    </button>
+                    <>
+                      <div className="form-grid">
+                        <label className="field">
+                          <span>User type</span>
+                          <select value={researchForm.userType} onChange={(event) => handleResearchUpdate('userType', event.target.value)}>
+                            {researchOptions.userType.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label className="field">
+                          <span>City</span>
+                          <select value={researchForm.city} onChange={(event) => handleResearchUpdate('city', event.target.value)}>
+                            {researchOptions.cities.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label className="field">
+                          <span>Experience</span>
+                          <input value={researchForm.experience} onChange={(event) => handleResearchUpdate('experience', event.target.value)} placeholder="1-2 years" />
+                        </label>
+
+                        <label className="field">
+                          <span>Number of properties</span>
+                          <input value={researchForm.propertyCount} onChange={(event) => handleResearchUpdate('propertyCount', event.target.value)} placeholder="1" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Booking behaviour</span>
+                          <input value={researchForm.bookingBehavior} onChange={(event) => handleResearchUpdate('bookingBehavior', event.target.value)} placeholder="Direct booking + Airbnb" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Biggest problems</span>
+                          <textarea value={researchForm.biggestProblems} onChange={(event) => handleResearchUpdate('biggestProblems', event.target.value)} placeholder="What is causing friction in your shortlet business?" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Existing tools</span>
+                          <input value={researchForm.existingTools} onChange={(event) => handleResearchUpdate('existingTools', event.target.value)} placeholder="What tools or systems do you use today?" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Existing platforms</span>
+                          <input value={researchForm.existingPlatforms} onChange={(event) => handleResearchUpdate('existingPlatforms', event.target.value)} placeholder="Airbnb, booking apps, spreadsheets, WhatsApp..." />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>What they wish worked better</span>
+                          <textarea value={researchForm.wantsBetter} onChange={(event) => handleResearchUpdate('wantsBetter', event.target.value)} placeholder="What would make the experience easier or more trustworthy?" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Biggest frustration</span>
+                          <textarea value={researchForm.mainFrustration} onChange={(event) => handleResearchUpdate('mainFrustration', event.target.value)} placeholder="What drives you mad about the current setup?" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>What&apos;s the one thing you wish someone would fix about the shortlet business?</span>
+                          <textarea value={researchForm.mainFrustration} onChange={(event) => handleResearchUpdate('mainFrustration', event.target.value)} placeholder="The one thing that matters most..." />
+                        </label>
+
+                        <label className="field">
+                          <span>Willingness to participate in a 15-minute interview</span>
+                          <select value={researchForm.interview} onChange={(event) => handleResearchUpdate('interview', event.target.value)}>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                          </select>
+                        </label>
+
+                        <label className="field">
+                          <span>WhatsApp / email</span>
+                          <input value={researchForm.contact} onChange={(event) => handleResearchUpdate('contact', event.target.value)} placeholder="+234... or email" />
+                        </label>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary submit-btn" onClick={() => trackEvent('research_started')}>
+                        Share your perspective
+                      </button>
+                    </>
                   )}
+                </form>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div className={`collapsible-shell ${expandedSections.guest ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('guest')} aria-expanded={expandedSections.guest}>
+            <span className="eyebrow">Guest early access</span>
+            <strong>LOOKING FOR A DECEMBER STAY?</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
+
+          <div className="collapsible-body">
+            <section className="section-shell guest-section">
+              <div className="guest-layout">
+                <div className="guest-copy">
+                  <p>Tell us where you&apos;re going and what you&apos;re looking for.</p>
                 </div>
-              </>
-            )}
-          </form>
-        </section>
+
+                <form className="guest-form" onSubmit={handleGuestSubmit}>
+                  {guestSubmitted ? (
+                    <div className="success-box">
+                      <h3>YOU&apos;RE ON THE LIST.</h3>
+                      <p>We&apos;ll use what you&apos;ve told us to help match you with suitable HAMLET stays as they become available.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="form-grid">
+                        <label className="field">
+                          <span>Name</span>
+                          <input value={guestForm.name} onChange={(event) => handleGuestUpdate('name', event.target.value)} placeholder="Your name" />
+                        </label>
+
+                        <label className="field">
+                          <span>WhatsApp</span>
+                          <input value={guestForm.whatsapp} onChange={(event) => handleGuestUpdate('whatsapp', event.target.value)} placeholder="+234..." />
+                        </label>
+
+                        <label className="field">
+                          <span>City</span>
+                          <input value={guestForm.city} onChange={(event) => handleGuestUpdate('city', event.target.value)} placeholder="Lagos" />
+                        </label>
+
+                        <label className="field">
+                          <span>Dates</span>
+                          <input value={guestForm.dates} onChange={(event) => handleGuestUpdate('dates', event.target.value)} placeholder="12-18 Dec" />
+                        </label>
+
+                        <label className="field">
+                          <span>Guests</span>
+                          <input value={guestForm.guests} onChange={(event) => handleGuestUpdate('guests', event.target.value)} placeholder="2" />
+                        </label>
+
+                        <label className="field">
+                          <span>Budget</span>
+                          <input value={guestForm.budget} onChange={(event) => handleGuestUpdate('budget', event.target.value)} placeholder="₦120,000" />
+                        </label>
+
+                        <label className="field">
+                          <span>Stay type</span>
+                          <input value={guestForm.stayType} onChange={(event) => handleGuestUpdate('stayType', event.target.value)} placeholder="Couple / Family / Business" />
+                        </label>
+
+                        <label className="field full-width">
+                          <span>Preferences</span>
+                          <textarea value={guestForm.preferences} onChange={(event) => handleGuestUpdate('preferences', event.target.value)} placeholder="Quiet, close to the airport, pool, parking, family-friendly..." />
+                        </label>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary submit-btn" onClick={() => trackEvent('guest_interest_started')}>
+                        Help Me Find a Stay
+                      </button>
+                    </>
+                  )}
+                </form>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div className={`collapsible-shell ${expandedSections.hosts ? 'expanded' : ''}`}>
+          <button type="button" className="collapsible-trigger" onClick={() => toggleSection('hosts')} aria-expanded={expandedSections.hosts}>
+            <span className="eyebrow">For owners & managers</span>
+            <strong>OWN OR MANAGE A SHORTLET?</strong>
+            <span className="trigger-hint">Hover / tap to reveal</span>
+          </button>
+
+          <div className="collapsible-body">
+            <section className="section-shell hosts-section" id="hosts">
+              <div className="hosts-copy">
+                <p>
+                  HAMLET is building a better way for Nigerian shortlet owners to list, manage and grow their properties.
+                </p>
+                <p className="strong-line">Become one of our Founding Hosts.</p>
+                <ul className="benefits-list">
+                  <li>Early access</li>
+                  <li>Priority onboarding</li>
+                  <li>Founding Host recognition</li>
+                  <li>Launch visibility</li>
+                  <li>Early product access</li>
+                  <li>Potential founding-period commercial incentives</li>
+                </ul>
+              </div>
+
+              <form className="host-form" onSubmit={handleHostSubmit}>
+                {hostSubmitted ? (
+                  <div className="success-box large-success">
+                    <h3>YOU&apos;RE IN THE FOUNDING CIRCLE.</h3>
+                    <p>We&apos;ll be in touch to learn about your property and help you get ready for HAMLET.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="stepper" aria-label="Founding host steps">
+                      {hostSteps.map((step, index) => (
+                        <button
+                          key={step.title}
+                          type="button"
+                          className={hostStep === index ? 'step-badge active' : 'step-badge'}
+                          onClick={() => setHostStep(index)}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <h3 className="step-title">{currentStep.title}</h3>
+
+                    <div className="form-grid">
+                      {currentStep.fields.map((field) => (
+                        <label key={field.key} className={field.type === 'textarea' || field.key === 'details' ? 'field full-width' : 'field'}>
+                          <span>{field.label}</span>
+                          {field.type === 'textarea' ? (
+                            <textarea
+                              value={hostForm[field.key as keyof typeof hostForm] as string}
+                              onChange={(event) => handleHostUpdate(field.key, event.target.value)}
+                              placeholder={field.placeholder}
+                            />
+                          ) : field.type === 'select' ? (
+                            <select
+                              value={hostForm[field.key as keyof typeof hostForm] as string}
+                              onChange={(event) => handleHostUpdate(field.key, event.target.value)}
+                            >
+                              {field.options?.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type={field.type}
+                              value={hostForm[field.key as keyof typeof hostForm] as string}
+                              onChange={(event) => handleHostUpdate(field.key, event.target.value)}
+                              placeholder={field.placeholder}
+                            />
+                          )}
+                        </label>
+                      ))}
+                    </div>
+
+                    <div className="host-actions">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        disabled={hostStep === 0}
+                        onClick={() => setHostStep((current) => Math.max(0, current - 1))}
+                      >
+                        Back
+                      </button>
+
+                      {hostStep < hostSteps.length - 1 ? (
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => {
+                            trackEvent('founding_host_started', { step: hostStep + 1 })
+                            setHostStep((current) => Math.min(hostSteps.length - 1, current + 1))
+                          }}
+                        >
+                          Next
+                        </button>
+                      ) : (
+                        <button type="submit" className="btn btn-primary" onClick={submitHost}>
+                          Become a Founding Host
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </form>
+            </section>
+          </div>
+        </div>
 
         <section className="section-shell final-cta-section">
           <div className="final-cta-box">
