@@ -9,15 +9,15 @@ const STORAGE_KEYS = {
 }
 
 const prompts = [
-  "I'm coming to Lagos for December with four friends...",
-  "I need a two-bedroom around Lekki for a wedding...",
-  "Looking for somewhere quiet in Abuja this weekend...",
-  "I need a nice place for me and my wife...",
+  "I'm visiting Lagos for work next week...",
+  'I need a two-bedroom in Lekki for a family visit...',
+  'Looking for somewhere quiet in Abuja this weekend...',
+  'I need a nice place for me and my wife...',
 ]
 
 const intentData = {
   Party: {
-    title: 'Looking for a December stay that keeps you close to the action?',
+    title: 'Looking for a stay that keeps you close to the action?',
     cta: 'Find Party-Friendly Stays',
   },
   Owambe: {
@@ -41,7 +41,7 @@ const intentData = {
     cta: 'Find Business Stays',
   },
   Getaway: {
-    title: 'Want a December stay that feels restorative and easy?',
+    title: 'Want a getaway that feels restorative and easy?',
     cta: 'Find Getaway Stays',
   },
   'I just need somewhere nice': {
@@ -109,6 +109,7 @@ const initialResearchForm = {
 
 function App() {
   const [promptIndex, setPromptIndex] = useState(0)
+  const [showHeroPrompt, setShowHeroPrompt] = useState(false)
   const [stayQuery, setStayQuery] = useState('')
   const [selectedIntent, setSelectedIntent] = useState<keyof typeof intentData>('Party')
   const [selectedCity, setSelectedCity] = useState('Lagos')
@@ -283,17 +284,13 @@ function App() {
   return (
     <div className="page-shell">
       <header className="topbar">
-        <div className="brand-wrap">
-          <div className="brand-mark">H</div>
-          <div>
-            <div className="brand-name">HAMLET</div>
-            <div className="brand-sub">for Your Shortlets</div>
-          </div>
-        </div>
+        <a className="brand-link" href="/" aria-label="HAMLET home">
+          <img className="brand-logo" src="/hamlet-logo.svg" alt="HAMLET: Better stays. Brighter returns." />
+        </a>
 
         <nav className="main-nav" aria-label="Main navigation">
           <a href="#trust">Why HAMLET</a>
-          <a href="#december">December</a>
+          <a href="#december">Detty December</a>
           <a href="#hosts">Founding Hosts</a>
           <a href="#research">Research</a>
         </nav>
@@ -312,11 +309,10 @@ function App() {
       <main>
         <section className="hero-section">
           <div className="hero-copy">
-            <span className="eyebrow">Founding phase • Nigeria</span>
             <h1>WHERE ARE YOU STAYING?</h1>
-            <p className="hero-kicker">HAMLET for Your Shortlets</p>
+            <p className="hero-kicker">Shortlets for every season, every reason.</p>
             <p className="lead">
-              Find a place you can trust. Book a stay without the usual uncertainty.
+              From work trips and weekend escapes to Detty December and homecomings, HAMLET is here before, during and after December.
             </p>
 
             <div className="cta-row">
@@ -336,39 +332,40 @@ function App() {
               </a>
             </div>
 
-            <div className="mini-cta">
+            <div className={`hero-prompt-reveal ${showHeroPrompt ? 'expanded' : ''}`}>
               <button
                 type="button"
-                onClick={() => trackEvent('founding_host_started', { source: 'hero' })}
+                className="prompt-reveal-trigger"
+                aria-expanded={showHeroPrompt}
+                onClick={() => setShowHeroPrompt((current) => !current)}
               >
-                Join the Founding Circle
+                <span>Ask Horatio to find a stay</span>
+                <span aria-hidden="true">{showHeroPrompt ? '−' : '+'}</span>
               </button>
-            </div>
-
-            <div className="prompt-box" aria-label="Stay assistant">
-              <div className="prompt-head">
-                <span className="prompt-label">Ask Horatio</span>
-              </div>
-              <textarea
-                value={stayQuery}
-                onChange={(event) => setStayQuery(event.target.value)}
-                placeholder={prompts[promptIndex]}
-              />
-              <div className="prompt-row">
-                <div className="prompt-meta">
-                  <span>{selectedCity}</span>
-                  <span>•</span>
-                  <span>December</span>
-                  <span>•</span>
-                  <span>4 guests</span>
+              <div className="prompt-reveal-body">
+                <div className="prompt-box" aria-label="Stay assistant">
+                  <textarea
+                    value={stayQuery}
+                    onChange={(event) => setStayQuery(event.target.value)}
+                    placeholder={prompts[promptIndex]}
+                  />
+                  <div className="prompt-row">
+                    <div className="prompt-meta">
+                      <span>{selectedCity}</span>
+                      <span>•</span>
+                      <span>Your dates</span>
+                      <span>•</span>
+                      <span>4 guests</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-primary compact"
+                      onClick={() => trackEvent('hero_cta_clicked', { query: stayQuery || prompts[promptIndex] })}
+                    >
+                      Search stay
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-primary compact"
-                  onClick={() => trackEvent('hero_cta_clicked', { query: stayQuery || prompts[promptIndex] })}
-                >
-                  Search stay
-                </button>
               </div>
             </div>
           </div>
@@ -377,8 +374,8 @@ function App() {
             <div className="image-card large-card">
               <div className="image-surface" />
               <div className="overlay-panel">
-                <p>December in Lagos</p>
-                <h3>Quiet, trustworthy stays with real accountability.</h3>
+                <p>Stay well, all year</p>
+                <h3>Find a place you can trust, whenever life takes you there.</h3>
                 <div className="info-row">
                   <span>Curated homes</span>
                   <span>Verified details</span>
@@ -399,31 +396,28 @@ function App() {
         </section>
 
         <section className="section-shell december-section" id="december">
-          <div className="section-copy">
-            <span className="eyebrow">December is coming</span>
-            <h2>DECEMBER IS COMING.</h2>
-            <p>
-              The parties.<br />
-              The weddings.<br />
-              The family visits.<br />
-              The reunions.<br />
-              The trips.<br />
-              The people coming home.
-            </p>
-            <p className="strong-line">Your stay is part of the plan.</p>
-            <div className="cta-row">
-              <a className="btn btn-primary" href="#stay-finder">
-                Find My December Stay
-              </a>
+          <div className="december-copy">
+            <h2>DETTY DECEMBER. SORTED.</h2>
+            <p>From Lagos nights and owambes to weddings, reunions and homecomings, make the stay part of the good memories.</p>
+            <div className="occasion-list" aria-label="December occasions">
+              <span>Lagos nights</span>
+              <span>Owambe</span>
+              <span>Weddings</span>
+              <span>Homecoming</span>
             </div>
+            <a className="btn btn-primary" href="#stay-finder">
+              Find My Detty December Stay
+            </a>
+          </div>
+          <div className="december-visual" role="img" aria-label="A warmly lit celebration table set for a December gathering">
+            <span className="december-location">LAGOS · ABUJA · HOME</span>
           </div>
         </section>
 
         <section className="section-shell" id="stay-finder">
           <div className="section-header split-header">
             <div>
-              <span className="eyebrow">December stay finder</span>
-              <h2>FIND YOUR DECEMBER STAY</h2>
+              <h2>FIND A STAY THAT FITS YOUR PLANS</h2>
             </div>
             <div className="city-picker" aria-label="Choose city">
               {['Lagos', 'Abuja', 'Ibadan'].map((city) => (
@@ -469,7 +463,6 @@ function App() {
 
           <div className="finder-panel">
             <div>
-              <p className="small-label">Selected stay</p>
               <h3>{selectedIntentDetails.title}</h3>
             </div>
             <button
@@ -484,7 +477,6 @@ function App() {
 
         <section className="section-shell trust-section" id="trust">
           <div className="section-header center-header">
-            <span className="eyebrow">Trust</span>
             <h2>SHORTLETS, WITH ACCOUNTABILITY.</h2>
           </div>
 
@@ -506,9 +498,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.problem ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('problem')} aria-expanded={expandedSections.problem}>
-            <span className="eyebrow">The problem</span>
             <strong>THE PROBLEM WITH THE WAY THINGS WORK TODAY</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -531,9 +521,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.ecosystem ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('ecosystem')} aria-expanded={expandedSections.ecosystem}>
-            <span className="eyebrow">The ecosystem</span>
             <strong>THE HAMLET ECOSYSTEM</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -561,9 +549,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.horatio ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('horatio')} aria-expanded={expandedSections.horatio}>
-            <span className="eyebrow">AI companion</span>
             <strong>MEET HORATIO.</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -596,9 +582,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.launch ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('launch')} aria-expanded={expandedSections.launch}>
-            <span className="eyebrow">Launch assets</span>
             <strong>READY FOR THE FIRST WAVE.</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -649,7 +633,7 @@ function App() {
 
                     <div className="screen-card">
                       <div>
-                        <small>December in Lagos</small>
+                        <small>Stays, all year</small>
                         <strong>Quiet stays. Real accountability.</strong>
                       </div>
                     </div>
@@ -668,9 +652,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.validation ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('validation')} aria-expanded={expandedSections.validation}>
-            <span className="eyebrow">Market validation</span>
             <strong>HELP US BUILD IT RIGHT.</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -695,9 +677,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.research ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('research')} aria-expanded={expandedSections.research}>
-            <span className="eyebrow">Research form</span>
             <strong>HELP US BUILD HAMLET AROUND REAL BUSINESS REALITY.</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -811,9 +791,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.guest ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('guest')} aria-expanded={expandedSections.guest}>
-            <span className="eyebrow">Guest early access</span>
-            <strong>LOOKING FOR A DECEMBER STAY?</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
+            <strong>LOOKING FOR A SHORTLET STAY?</strong>
           </button>
 
           <div className="collapsible-body">
@@ -886,9 +864,7 @@ function App() {
 
         <div className={`collapsible-shell ${expandedSections.hosts ? 'expanded' : ''}`}>
           <button type="button" className="collapsible-trigger" onClick={() => toggleSection('hosts')} aria-expanded={expandedSections.hosts}>
-            <span className="eyebrow">For owners & managers</span>
             <strong>OWN OR MANAGE A SHORTLET?</strong>
-            <span className="trigger-hint">Hover / tap to reveal</span>
           </button>
 
           <div className="collapsible-body">
@@ -998,7 +974,6 @@ function App() {
 
         <section className="section-shell final-cta-section">
           <div className="final-cta-box">
-            <span className="eyebrow">Next chapter</span>
             <h2>THE NEXT GREAT STAY STARTS WITH KNOWING WHERE YOU&apos;RE GOING.</h2>
             <div className="cta-row center-row">
               <a className="btn btn-primary" href="#stay-finder">Find a Stay</a>
@@ -1010,16 +985,12 @@ function App() {
       </main>
 
       <footer className="site-footer">
-        <div className="brand-wrap">
-          <div className="brand-mark">H</div>
-          <div>
-            <div className="brand-name">HAMLET</div>
-            <div className="brand-sub">Shortlets, with accountability.</div>
-          </div>
-        </div>
+        <a className="brand-link" href="/" aria-label="HAMLET home">
+          <img className="brand-logo" src="/hamlet-logo.svg" alt="HAMLET: Better stays. Brighter returns." />
+        </a>
         <div className="footer-links">
           <a href="#trust">Why HAMLET</a>
-          <a href="#december">December</a>
+          <a href="#december">Detty December</a>
           <a href="#hosts">Founding Hosts</a>
           <a href={toWhatsAppLink('Hi HAMLET, I want to learn more.')}>WhatsApp</a>
         </div>

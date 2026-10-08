@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="190 200 1170 335" role="img" aria-labelledby="title description">
+  <title id="title">HAMLET</title>
+  <desc id="description">HAMLET. Better stays. Brighter returns.</desc>
+  <text x="210" y="510" fill="#f5f0e8" font-family="Georgia, 'Times New Roman', serif" font-size="400" font-weight="700">H</text>
+  <clipPath id="h-shape">
+    <text x="210" y="510" font-family="Georgia, 'Times New Roman', serif" font-size="400" font-weight="700">H</text>
+  </clipPath>
+  <rect x="190" y="345" width="400" height="42" fill="#d4a23f" clip-path="url(#h-shape)" />
+  <text x="595" y="450" fill="#f5f0e8" font-family="Georgia, 'Times New Roman', serif" font-size="160" font-weight="700" letter-spacing="3" textLength="720" lengthAdjust="spacingAndGlyphs">HAMLET</text>
+  <text x="610" y="510" fill="#d7b571" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="7" textLength="700" lengthAdjust="spacingAndGlyphs">BETTER STAYS. BRIGHTER RETURNS.</text>
+</svg>
