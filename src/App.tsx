@@ -559,6 +559,73 @@ function App() {
           </div>
         </section>
 
+        <section className="section-shell launch-assets-section">
+          <div className="section-header center-header">
+            <span className="eyebrow">Launch assets</span>
+            <h2>READY FOR THE FIRST WAVE.</h2>
+          </div>
+
+          <div className="launch-assets-grid">
+            <div className="launch-copy">
+              <article className="asset-card">
+                <span className="asset-kicker">Homepage</span>
+                <h3>Premium brand front door</h3>
+                <p>Clear value proposition, founder honesty, and trust-first messaging for Nigeria's shortlet market.</p>
+              </article>
+
+              <article className="asset-card">
+                <span className="asset-kicker">Lead capture</span>
+                <h3>Supply + demand in one funnel</h3>
+                <p>Founding host applications and guest early-access flows capture signal before the broader platform is live.</p>
+              </article>
+
+              <article className="asset-card">
+                <span className="asset-kicker">Market learning</span>
+                <h3>Research that shapes the roadmap</h3>
+                <p>Every answer tells us where trust breaks down, what owners need, and what guests actually care about.</p>
+              </article>
+            </div>
+
+            <div className="device-frame" aria-label="HAMLET product screenshot mockup">
+              <div className="device-header">
+                <span className="dot" />
+                <span className="dot" />
+                <span className="dot" />
+              </div>
+
+              <div className="device-screen">
+                <div className="screen-topbar">
+                  <span>HAMLET</span>
+                  <span>Founding phase</span>
+                </div>
+
+                <div className="screen-hero">
+                  <strong>WHERE ARE YOU STAYING?</strong>
+                  <p>Find a place you can trust.</p>
+                </div>
+
+                <div className="screen-actions">
+                  <span>Explore Stays</span>
+                  <span>List Your Property</span>
+                </div>
+
+                <div className="screen-card">
+                  <div>
+                    <small>December in Lagos</small>
+                    <strong>Quiet stays. Real accountability.</strong>
+                  </div>
+                </div>
+
+                <div className="screen-grid">
+                  <div />
+                  <div />
+                  <div />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="section-shell validation-section">
           <div className="section-header center-header">
             <span className="eyebrow">Market validation</span>
