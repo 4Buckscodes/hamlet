@@ -1,0 +1,63 @@
+# HAMLET for Your Shortlets
+
+## Summary
+HAMLET is a shortlet marketplace and operating platform for Nigeria, focused on trusted shortlet stays, better owner operations, and structured market validation for the shortlet industry.
+
+## Brand
+- Product: HAMLET
+- Public expression: HAMLET for Your Shortlets
+- Parent company: Abundance Abodes
+- Category: Shortlet marketplace + property operating platform
+- Initial markets: Lagos, Abuja, Ibadan
+- Mission: Make shortlet ownership easier and shortlet booking safer.
+- Brand mantra: Make it easy. Make it trustworthy. Make it accountable.
+
+## Product positioning
+HAMLET is not a generic Airbnb clone. It is positioned as a market-validation machine and early product experience for a larger operating system for African shortlets.
+
+Key themes:
+- shortlets, with accountability
+- trust before scale
+- premium hospitality experience
+- local relevance for Nigerian travel and hosting
+- founder-led learning and validation
+
+## Key user journeys
+- guests searching for December stays and trusted accommodation
+- property owners/managers applying to become founding hosts
+- researchers and operators sharing market pain points
+- founders learning which shortlet problems matter most
+
+## Validation goals
+The website is designed to:
+- attract supply and demand
+- increase trust
+- capture leads
+- test positioning
+- collect market intelligence
+- support founder interviews and early product learning
+
+## Important product rules
+- Do not claim features or stats that are not live.
+- Do not invent reviews, listings, verification guarantees, or user numbers.
+- Use honest language such as founding phase, early access, and join the first wave.
+- Keep the product premium, local, and trustworthy rather than generic SaaS or luxury-real-estate styling.
+
+## Repository
+Project repository: https://github.com/4Buckscodes/hamlet.git
+
+## Run locally
+```bash
+npm install
+npm run dev
+```
+
+## Build
+```bash
+npm run build
+```
+
+## Lint
+```bash
+npm run lint
+```
