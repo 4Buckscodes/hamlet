@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import AgentPortal from './AgentPortal'
 
 const STORAGE_KEYS = {
   host: 'hamlet-host-leads',
@@ -293,6 +294,7 @@ function App() {
           <a href="#december">Detty December</a>
           <a href="#hosts">Founding Hosts</a>
           <a href="#research">Research</a>
+          <a href="#agent-workspace">Agent workspace</a>
         </nav>
 
         <a
@@ -982,6 +984,7 @@ function App() {
             </div>
           </div>
         </section>
+        <AgentPortal />
       </main>
 
       <footer className="site-footer">
