@@ -128,7 +128,7 @@ export default function PropertyIntake() {
   return (
     <section className="hm-intake" id="property-intake">
       <div className="hm-intake-intro">
-        <span className="hm-eyebrow">FOUNDING INVENTORY · OWNERS & AGENTS</span>
+        <span className="hm-eyebrow">FOUNDING INVENTORY · HAMLET PARTNER NETWORK</span>
         <h2>Have a good shortlet?<br /><em>Let's get it listed.</em></h2>
         <p>Share the basics. Our team will review the details and contact you about the next steps. Submitting a property does not publish it or mean it has been verified.</p>
         <div className="hm-intake-promise"><span>✓</span><div><strong>One simple intake</strong><small>Tell us about the property, share its photos and availability, and note which documents you have.</small></div></div>
@@ -153,7 +153,7 @@ export default function PropertyIntake() {
                 <label>Full name *<input required minLength={2} maxLength={120} autoComplete="name" value={form.contactName} onChange={(event) => update('contactName', event.target.value)} placeholder="Name of contact person" /></label>
                 <label>WhatsApp / phone *<input required type="tel" minLength={7} maxLength={40} autoComplete="tel" value={form.contactPhone} onChange={(event) => update('contactPhone', event.target.value)} placeholder="+234..." /></label>
                 <label>Email (optional)<input type="email" maxLength={180} autoComplete="email" value={form.contactEmail} onChange={(event) => update('contactEmail', event.target.value)} placeholder="you@example.com" /></label>
-                <label>Your role *<select value={form.submitterRole} onChange={(event) => update('submitterRole', event.target.value)}><option>Owner</option><option>Property manager</option><option>Agent</option></select></label>
+                <label>Your role *<select value={form.submitterRole} onChange={(event) => update('submitterRole', event.target.value)}><option>Owner</option><option>Property manager</option><option>Agent</option><option>Shortlet operator</option><option>Co-host / hospitality operator</option><option>Referral partner</option><option>Other authorised partner</option></select></label>
               </div>
             </fieldset>
 
