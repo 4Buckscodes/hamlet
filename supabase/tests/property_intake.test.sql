@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(13);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -87,9 +87,13 @@ select is(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'f0000000-0000-4000-8000-000000000001', true);
-update public.properties
-set listing_status = 'approved'
-where id = (select converted_property_id from public.property_intake_submissions limit 1);
+select lives_ok(
+  $select public.review_agent_listing(
+    (select converted_property_id from public.property_intake_submissions limit 1),
+    'approved'
+  )$,
+  'admin can approve a property through the review workflow'
+);
 
 reset role;
 set local role anon;
@@ -102,9 +106,13 @@ select is(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'f0000000-0000-4000-8000-000000000001', true);
-update public.properties
-set is_suspended = true
-where id = (select converted_property_id from public.property_intake_submissions limit 1);
+select lives_ok(
+  $select public.admin_set_property_suspension(
+    (select converted_property_id from public.property_intake_submissions limit 1),
+    true
+  )$,
+  'admin can suspend an approved property'
+);
 
 reset role;
 set local role anon;
