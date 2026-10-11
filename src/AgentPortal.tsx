@@ -92,7 +92,7 @@ const formatNaira = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
 
 const developmentSnapshot = {
   listing: 'DEVELOPMENT SAMPLE · Lekki serviced apartment · Correction requested',
-  offer: 'DEVELOPMENT SAMPLE · Fixed agent payout · NGN 45,000 · Terms v2',
+  offer: 'DEVELOPMENT SAMPLE · Fixed partner payout · NGN 45,000 · Terms v2',
   booking: 'DEVELOPMENT SAMPLE · BK-DEV-003 · Booking requested · Settlement not integrated',
   notification: 'DEVELOPMENT SAMPLE · Owner requested an updated property walkthrough.',
 }
@@ -175,7 +175,7 @@ export default function AgentPortal() {
         try {
           await loadDashboard(data.session.user.id)
         } catch (loadError) {
-          if (alive) setError(loadError instanceof Error ? loadError.message : 'Unable to load the agent workspace.')
+          if (alive) setError(loadError instanceof Error ? loadError.message : 'Unable to load the partner workspace.')
         }
       }
       if (alive) setLoading(false)
@@ -360,7 +360,7 @@ export default function AgentPortal() {
     if (!supabase) return
     const { error: correctionError } = await supabase.rpc('request_listing_correction', { p_property_id: propertyId, p_message: correction })
     if (correctionError) setError(correctionError.message)
-    else { setMessage('Correction request sent to the listing agent.'); await refresh() }
+    else { setMessage('Correction request sent to the listing partner.'); await refresh() }
   }
 
   const reviewListing = async (propertyId: string, status: 'approved' | 'rejected') => {
@@ -374,7 +374,7 @@ export default function AgentPortal() {
     if (!supabase) return
     const { error: reviewError } = await supabase.rpc('review_agent_application', { p_agent_id: agentId, p_status: status })
     if (reviewError) setError(reviewError.message)
-    else { setMessage(`Agent application ${status}.`); await refresh() }
+    else { setMessage(`Partner application ${status}.`); await refresh() }
   }
 
   const loadAgentsForProperty = async (propertyId: string) => {
@@ -422,7 +422,7 @@ export default function AgentPortal() {
       <div className="agent-portal-heading">
         <div>
           <p className="agent-eyebrow">HAMLET OPERATIONS</p>
-          <h2>Agent workspace</h2>
+          <h2>Partner workspace</h2>
           <p>Listings, authorised assignments, deal terms, and booking visibility in one place.</p>
         </div>
         <a className="agent-text-link" href="#hosts">Founding host information</a>
@@ -436,9 +436,9 @@ export default function AgentPortal() {
           </div>
           <div className="agent-workspace-grid">
             <article className="agent-panel">
-              <h3>Registration and onboarding</h3>
-              <p>Connect a Supabase project to register an agent, capture service area and experience, and submit the application for review.</p>
-              <label className="agent-field"><span>Email</span><input disabled placeholder="agent@example.com" /></label>
+              <h3>Partner registration and onboarding</h3>
+              <p>Connect a Supabase project to register a partner, capture service area and experience, and submit the application for review.</p>
+              <label className="agent-field"><span>Email</span><input disabled placeholder="partner@example.com" /></label>
               <button className="agent-primary" type="button" disabled>Supabase not configured</button>
             </article>
             <article className="agent-panel">
@@ -448,7 +448,7 @@ export default function AgentPortal() {
               <p>Sample correction: add a current property walkthrough link.</p>
             </article>
             <article className="agent-panel">
-              <h3>Agent Deal Board</h3>
+              <h3>Partner Deal Board</h3>
               <p>{developmentSnapshot.offer}</p>
               <button className="agent-secondary" type="button" disabled>Accept disabled in preview</button>
             </article>
@@ -458,7 +458,7 @@ export default function AgentPortal() {
               <p>Agreed payout: sample only. No funds have moved; settlement integration is not connected.</p>
             </article>
             <article className="agent-panel">
-              <h3>Agent notification centre</h3>
+              <h3>Partner notifications</h3>
               <p>{developmentSnapshot.notification}</p>
               <p>Development sample notifications are not delivered or saved.</p>
             </article>
@@ -466,23 +466,23 @@ export default function AgentPortal() {
           <p className="agent-setup-note">To enable protected workflows, configure <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>, then apply the migration in <code>supabase/migrations</code>.</p>
         </div>
       ) : !isSupabaseConfigured ? (
-        <div className="agent-alert info">Agent sign-in is unavailable because the server connection is not configured.</div>
+        <div className="agent-alert info">Partner access is unavailable because the server connection is not configured.</div>
       ) : loading ? (
-        <div className="agent-panel" role="status">Loading agent workspace…</div>
+        <div className="agent-panel" role="status">Loading partner workspace…</div>
       ) : !session ? (
         <div className="agent-auth-layout">
           <aside className="agent-auth-intro">
-            <span className="agent-status development">Applications reviewed by HAMLET</span>
+            <span className="agent-status development">Partner applications reviewed by HAMLET</span>
             <h3>Build a trusted local property network.</h3>
-            <p>Agent accounts begin pending. Assignments and commercial offers appear only after the account is approved and a property is authorised for you.</p>
+            <p>Partner accounts are reviewed by HAMLET. Assignments and commercial offers appear only after the account is approved and a property is authorised for you.</p>
           </aside>
           <form className="agent-panel agent-auth-form" onSubmit={handleAuth}>
-            <div className="agent-mode-switch" role="group" aria-label="Agent account action">
+            <div className="agent-mode-switch" role="group" aria-label="Partner account action">
               <button type="button" className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')}>Register</button>
               <button type="button" className={mode === 'sign_in' ? 'selected' : ''} onClick={() => setMode('sign_in')}>Sign in</button>
             </div>
-            <h3>{mode === 'register' ? 'Join HAMLET as an agent' : 'Sign in to your workspace'}</h3>
-            {mode === 'register' && <p className="agent-muted">Create your own account to submit shortlets and track reviews. New agent accounts are pending until HAMLET approves them. Admin access is granted separately by HAMLET and cannot be self-selected.</p>}
+            <h3>{mode === 'register' ? 'Join the HAMLET Partner Network' : 'Sign in to your workspace'}</h3>
+            {mode === 'register' && <p className="agent-muted">Create your own account to submit shortlets and track reviews. New partner accounts are pending until HAMLET approves them. Admin access is granted separately by HAMLET and cannot be self-selected.</p>}
             {mode === 'register' && <>
               <label className="agent-field"><span>Full name</span><input required autoComplete="name" value={authForm.displayName} onChange={(event) => setAuthForm({ ...authForm, displayName: event.target.value })} /></label>
               <label className="agent-field"><span>Phone</span><input required autoComplete="tel" value={authForm.phone} onChange={(event) => setAuthForm({ ...authForm, phone: event.target.value })} /></label>
@@ -493,7 +493,7 @@ export default function AgentPortal() {
             <label className="agent-field"><span>Password</span><input required type="password" minLength={8} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={authForm.password} onChange={(event) => setAuthForm({ ...authForm, password: event.target.value })} /></label>
             {error && <p className="agent-alert error">{error}</p>}
             {message && <p className="agent-alert success">{message}</p>}
-            <button className="agent-primary" type="submit" disabled={busy}>{busy ? 'Working…' : mode === 'register' ? 'Submit agent application' : 'Sign in'}</button>
+            <button className="agent-primary" type="submit" disabled={busy}>{busy ? 'Working…' : mode === 'register' ? 'Create partner account' : 'Sign in'}</button>
           </form>
         </div>
       ) : (
@@ -510,14 +510,14 @@ export default function AgentPortal() {
             {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
 
             {dashboard.profile?.role === 'admin' && <section className="agent-panel agent-wide-panel">
-              <h3>Agent applications review</h3>
+              <h3>Partner applications review</h3>
               <p>Admin-only approvals are enforced by the review RPC, not by this interface.</p>
               {dashboard.applications.length === 0 ? <p className="agent-empty">No pending applications.</p> : <div className="agent-record-list">{dashboard.applications.map((application) => <article className="agent-record agent-record-title" key={application.id}><div><strong>{application.display_name}</strong><span>{application.city} · {application.experience}</span></div><div className="agent-session-actions"><button className="agent-primary" type="button" onClick={() => void reviewApplication(application.id, 'active')}>Approve</button><button className="agent-secondary" type="button" onClick={() => void reviewApplication(application.id, 'rejected')}>Reject</button></div></article>)}</div>}
             </section>}
 
             {dashboard.profile?.role === 'agent' && <form className="agent-panel" onSubmit={handlePropertySubmit}>
               <h3>Submit a property</h3>
-              <p>New listings enter review. Only the submitting agent and authorised assignees can access them.</p>
+              <p>New listings enter review. Only the submitter and authorised assignees can access them.</p>
               <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
               <div className="agent-fields-row">
                 <label className="agent-field"><span>City</span><select disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.city} onChange={(event) => setPropertyForm({ ...propertyForm, city: event.target.value })}><option>Lagos</option><option>Abuja</option><option>Ibadan</option></select></label>
@@ -622,7 +622,7 @@ export default function AgentPortal() {
             </section>}
 
             {dashboard.profile?.role === 'agent' && <section className="agent-panel agent-wide-panel">
-              <div className="agent-panel-heading"><div><h3>Agent Deal Board</h3><p>Accepting an offer records acceptance of the exact displayed terms version.</p></div></div>
+              <div className="agent-panel-heading"><div><h3>Partner Deal Board</h3><p>Accepting an offer records acceptance of the exact displayed terms version.</p></div></div>
               <div className="agent-record-list">
                 {dashboard.offers.filter((offer) => offer.status === 'open').length === 0 ? <p className="agent-empty">No open offers for your authorised properties.</p> : dashboard.offers.filter((offer) => offer.status === 'open').map((offer) => {
                   const currentVersion = offer.versions?.find((version) => version.id === offer.current_version_id)
