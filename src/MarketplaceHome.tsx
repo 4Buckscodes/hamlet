@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AgentPortal from './AgentPortal'
 import PropertyIntake from './PropertyIntake'
 import { calculateHamletPrice } from './hamletCore'
+import BookingRequestModal from './BookingRequestModal'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './MarketplaceHome.css'
 
@@ -12,6 +13,7 @@ type Stay = {
   city: 'Lagos' | 'Abuja' | 'Ibadan'
   type: string
   price: number
+  maxGuests: number
   rating: string
   image: string
   features: string[]
@@ -21,6 +23,7 @@ type Stay = {
 const stays: Stay[] = [
   {
     id: 'sample-1',
+    maxGuests: 2,
     title: 'Warm, modern apartment with a city view',
     area: 'Lekki Phase 1',
     city: 'Lagos',
@@ -33,6 +36,7 @@ const stays: Stay[] = [
   },
   {
     id: 'sample-2',
+    maxGuests: 2,
     title: 'Quiet designer stay with a private balcony',
     area: 'Victoria Island',
     city: 'Lagos',
@@ -45,6 +49,7 @@ const stays: Stay[] = [
   },
   {
     id: 'sample-3',
+    maxGuests: 5,
     title: 'Room for everyone in a bright family home',
     area: 'Ikeja GRA',
     city: 'Lagos',
@@ -57,6 +62,7 @@ const stays: Stay[] = [
   },
   {
     id: 'sample-4',
+    maxGuests: 2,
     title: 'A calm retreat with thoughtful details',
     area: 'Maitama',
     city: 'Abuja',
@@ -69,6 +75,7 @@ const stays: Stay[] = [
   },
   {
     id: 'sample-5',
+    maxGuests: 4,
     title: 'Spacious home for a group weekend',
     area: 'Wuse 2',
     city: 'Abuja',
@@ -81,6 +88,7 @@ const stays: Stay[] = [
   },
   {
     id: 'sample-6',
+    maxGuests: 2,
     title: 'Simple, stylish apartment for a city break',
     area: 'New Bodija',
     city: 'Ibadan',
@@ -122,6 +130,7 @@ export default function MarketplaceHome() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [liveStays, setLiveStays] = useState<Stay[] | null>(null)
   const [listingLoadError, setListingLoadError] = useState(false)
+  const [selectedStay, setSelectedStay] = useState<Stay | null>(null)
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return
@@ -147,6 +156,7 @@ export default function MarketplaceHome() {
           city: 'Lagos' as const,
           type: property.property_type,
           price: Number(property.nightly_rate),
+          maxGuests: Number(property.max_guests),
           rating: 'HAMLET reviewed',
           image: property.photos_url,
           features: [
@@ -305,7 +315,7 @@ export default function MarketplaceHome() {
                     <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>{stay.rating}</span></div>
                     <h3>{stay.title}</h3>
                     <p className="hm-stay-features">{stay.features.join(' · ')}</p>
-                    <div className="hm-stay-bottom"><p><strong>{naira(guestFacingNightlyPrice(stay.price))}</strong> <span>/ night · fee included (illustrative)</span></p><button type="button" onClick={() => enquire(stay)}>Enquire ↗</button></div>
+                    <div className="hm-stay-bottom"><p><strong>{naira(guestFacingNightlyPrice(stay.price))}</strong> <span>/ night · fee included{isSupabaseConfigured ? '' : ' (illustrative)'}</span></p>{isSupabaseConfigured ? <button type="button" onClick={() => setSelectedStay(stay)}>Request to book ↗</button> : <button type="button" onClick={() => enquire(stay)}>Enquire ↗</button>}</div>
                     <div className="hm-stay-tagline">{stay.tag}</div>
                   </div>
                 </article>
@@ -338,6 +348,7 @@ export default function MarketplaceHome() {
         </section>
       </main>
 
+      <BookingRequestModal stay={selectedStay} onClose={() => setSelectedStay(null)} />
       <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
