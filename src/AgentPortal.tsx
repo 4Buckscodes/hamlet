@@ -600,15 +600,15 @@ export default function AgentPortal() {
 
             {(dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'admin') && <section className="agent-panel agent-wide-panel">
               <h3>Authorised assignments and owner terms</h3>
-              <p>Choose a property you own, load active agents, assign access, and publish fixed terms. Database checks remain authoritative for every action.</p>
+              <p>Choose a property you own or manage, load approved partners, assign access, and publish fixed terms. Database checks remain authoritative for every action.</p>
               <div className="agent-owner-controls">
                 <label className="agent-field"><span>Property</span><select id="owner-property-id" onChange={(event) => void loadAgentsForProperty(event.target.value)}><option value="">Choose a property</option>{dashboard.listings.filter((listing) => listing.owner_id === session.user.id || listing.submitted_by === session.user.id || dashboard.profile?.role === 'admin').map((listing) => <option key={listing.id} value={listing.id}>{listing.title} · {listing.city}</option>)}</select></label>
-                <label className="agent-field"><span>Active agent</span><select id="owner-agent-id"><option value="">Load agents for selected property</option>{dashboard.agents.map((agent) => <option key={agent.agent_id} value={agent.agent_id}>{agent.display_name} · {agent.city}</option>)}</select></label>
+                <label className="agent-field"><span>Approved partner</span><select id="owner-agent-id"><option value="">Load partners for selected property</option>{dashboard.agents.map((agent) => <option key={agent.agent_id} value={agent.agent_id}>{agent.display_name} · {agent.city}</option>)}</select></label>
                 <button className="agent-secondary" type="button" onClick={() => {
                   const propertyId = (document.getElementById('owner-property-id') as HTMLSelectElement | null)?.value
                   const agentId = (document.getElementById('owner-agent-id') as HTMLSelectElement | null)?.value
                   if (propertyId && agentId) void assignAgent(propertyId, agentId)
-                  else setError('Choose a property and active agent first.')
+                  else setError('Choose a property and approved partner first.')
                 }}>Assign agent</button>
               </div>
               <form className="agent-owner-controls" onSubmit={submitOffer}>
@@ -627,7 +627,7 @@ export default function AgentPortal() {
                 {dashboard.offers.filter((offer) => offer.status === 'open').length === 0 ? <p className="agent-empty">No open offers for your authorised properties.</p> : dashboard.offers.filter((offer) => offer.status === 'open').map((offer) => {
                   const currentVersion = offer.versions?.find((version) => version.id === offer.current_version_id)
                   return <article className="agent-offer" key={offer.id}>
-                    <div><span className="agent-eyebrow">{offer.offer_kind === 'agent_payout' ? 'FIXED AGENT PAYOUT' : 'OWNER NET-RATE OFFER'}</span><h4>{offer.property?.title ?? 'Assigned property'}</h4><p>{offer.property?.city ?? ''} · Version {currentVersion?.version ?? '?'}</p></div>
+                    <div><span className="agent-eyebrow">{offer.offer_kind === 'agent_payout' ? 'FIXED PARTNER PAYOUT' : 'OWNER NET-RATE OFFER'}</span><h4>{offer.property?.title ?? 'Assigned property'}</h4><p>{offer.property?.city ?? ''} · Version {currentVersion?.version ?? '?'}</p></div>
                     <div className="agent-offer-terms"><strong>{currentVersion ? formatNaira(currentVersion.amount) : 'Terms unavailable'}</strong><span>{offer.offer_kind === 'agent_payout' ? 'agreed partner fee' : 'owner net rate'} · NGN</span><button className="agent-primary" type="button" disabled={busy || !currentVersion || dashboard.profile?.agent_status !== 'active'} onClick={() => void acceptOffer(offer)}>Accept v{currentVersion?.version ?? '?'}</button></div>
                   </article>
                 })}
