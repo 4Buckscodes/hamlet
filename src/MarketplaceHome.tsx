@@ -194,7 +194,7 @@ export default function MarketplaceHome() {
     <div className="hm-app" id="home">
       <div className="hm-preview-notice">
         <span className="hm-notice-dot" />
-        {isSupabaseConfigured ? 'Approved Lagos property inventory · availability is confirmed after a booking request' : 'Marketplace UI preview · Sample listings only — live availability and verification are not connected yet'}
+        {isSupabaseConfigured ? 'Approved Lagos property inventory · live booking requests are coming next' : 'Marketplace UI preview · Sample listings only — live availability and verification are not connected yet'}
       </div>
 
       <header className="hm-header">
@@ -217,7 +217,7 @@ export default function MarketplaceHome() {
           <div className="hm-hero-copy">
             <span className="hm-eyebrow"><span /> BETTER STAYS. REAL ACCOUNTABILITY.</span>
             <h1>Feel at home.<br /><em>Stay with confidence.</em></h1>
-            <p>Discover shortlets across Nigeria with clearer information, accountable people, and a better way to find your next stay.</p>
+            <p>Discover Lagos shortlets with clearer information, accountable people, and a better way to find your next stay.</p>
           </div>
           <div className="hm-hero-image" role="img" aria-label="Sunlit contemporary living room">
             <div className="hm-image-caption">
@@ -237,7 +237,7 @@ export default function MarketplaceHome() {
             </label>
             <label className="hm-search-field hm-search-text">
               <span>Neighbourhood or stay</span>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try Lekki, Maitama..." aria-label="Search neighbourhood or stay" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try Lekki, Ikeja..." aria-label="Search neighbourhood or stay" />
             </label>
             <label className="hm-search-field hm-guests">
               <span>Who is coming?</span>
