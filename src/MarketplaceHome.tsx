@@ -286,7 +286,7 @@ export default function MarketplaceHome() {
         <PropertyIntake />
 
         <section className="hm-workspace" id="agent-workspace">
-          <div className="hm-workspace-heading"><span className="hm-eyebrow">HAMLET PARTNER NETWORK</span><h2>One place to move the work forward.</h2><p>Owners and agents can submit properties and track reviews. Owners, agents, property managers and authorised shortlet partners can create an account, submit properties and track reviews. Admin access is granted separately by HAMLET.</p></div>
+          <div className="hm-workspace-heading"><span className="hm-eyebrow">HAMLET PARTNER NETWORK</span><h2>One place to move the work forward.</h2><p>Owners, agents, property managers and authorised shortlet partners can create a HAMLET Partner account, submit properties and track reviews. Admin access is granted separately by HAMLET.</p></div>
           <AgentPortal />
         </section>
       </main>
