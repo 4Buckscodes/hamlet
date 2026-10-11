@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import AgentPortal from './AgentPortal'
+import PropertyIntake from './PropertyIntake'
 import './MarketplaceHome.css'
 
 type Stay = {
@@ -153,10 +154,10 @@ export default function MarketplaceHome() {
         <nav className={mobileMenuOpen ? 'hm-nav hm-nav-open' : 'hm-nav'} aria-label="Main navigation">
           <a href="#explore" onClick={() => setMobileMenuOpen(false)}>Explore stays</a>
           <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How HAMLET works</a>
-          <a href="#owners" onClick={() => setMobileMenuOpen(false)}>For owners & agents</a>
+          <a href="#property-intake" onClick={() => setMobileMenuOpen(false)}>List a property</a>
         </nav>
         <div className="hm-header-actions">
-          <a className="hm-host-link" href="#owners">List your property</a>
+          <a className="hm-host-link" href="#property-intake">List your property</a>
           <a className="hm-profile-button" href="#owners" aria-label="Owner and agent workspace">↗</a>
         </div>
         <button className="hm-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>☰</button>
@@ -277,9 +278,11 @@ export default function MarketplaceHome() {
         </section>
 
         <section className="hm-owner-cta" id="owners">
-          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="#agent-workspace">Open owner & agent workspace <span>↗</span></a></div>
+          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="#property-intake">Submit a property <span>↗</span></a></div>
           <div className="hm-owner-visual"><div className="hm-owner-stat"><span>BUILT AROUND REAL PEOPLE</span><strong>Better stays.<br />Brighter returns.</strong><p>For guests, property owners and the agent network.</p></div></div>
         </section>
+
+        <PropertyIntake />
 
         <section className="hm-workspace" id="agent-workspace">
           <div className="hm-workspace-heading"><span className="hm-eyebrow">OWNER & AGENT TOOLS</span><h2>One place to move the work forward.</h2><p>The existing HAMLET workspace is retained below. Live access depends on Supabase configuration.</p></div>
@@ -287,7 +290,7 @@ export default function MarketplaceHome() {
         </section>
       </main>
 
-      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#owners">For owners & agents</a></div><small>© {new Date().getFullYear()} HAMLET · Made for the way Nigeria stays.</small></footer>
+      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© {new Date().getFullYear()} HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
 }
