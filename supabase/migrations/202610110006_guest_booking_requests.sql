@@ -212,6 +212,9 @@ begin
   if p_status = 'awaiting_payment' and not public.is_admin() then
     raise exception 'Only HAMLET admins can issue the payment step';
   end if;
+  if p_status = 'awaiting_payment' and (p_payment_deadline is null or p_payment_deadline <= now()) then
+    raise exception 'A future payment deadline is required';
+  end if;
 
   if p_status not in ('availability_confirmed', 'awaiting_payment', 'cancelled', 'expired', 'disputed') then
     raise exception 'Unsupported booking status transition';
@@ -252,6 +255,9 @@ begin
   if not found then raise exception 'Booking request not found'; end if;
   if booking.status <> 'awaiting_payment' then
     raise exception 'Booking must be awaiting payment before payment can be verified';
+  end if;
+  if booking.payment_deadline is not null and booking.payment_deadline < now() then
+    raise exception 'The booking payment deadline has expired';
   end if;
   if p_amount <> booking.guest_total then
     raise exception 'Verified payment amount must match the final guest total';
