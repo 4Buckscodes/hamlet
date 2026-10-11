@@ -156,7 +156,7 @@ begin
     raise exception 'This property is not available for booking requests';
   end if;
   if p_guest_count > listing.max_guests then
-    raise exception 'Guest count exceeds this property's maximum capacity';
+    raise exception 'Guest count exceeds the maximum capacity for this property';
   end if;
 
   stay_nights := p_check_out - p_check_in;
