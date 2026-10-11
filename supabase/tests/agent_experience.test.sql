@@ -51,7 +51,7 @@ select lives_ok(
 );
 select is((select status::text from public.agent_offers where id = 'e2000000-0000-4000-8000-000000000001'), 'accepted', 'accepted offer status is persisted');
 select lives_ok(
-  $$select public.resubmit_corrected_listing('e1000000-0000-4000-8000-000000000001', 'TEST corrected listing', 'Lagos', 'Yaba', 'Apartment', 2, 81000, 'https://example.test/test-listing')$$,
+  $$select public.resubmit_corrected_listing('e1000000-0000-4000-8000-000000000001', 'TEST corrected listing', 'Lagos', 'Yaba', 'Apartment', 2::smallint, 81000, 'https://example.test/test-listing')$$,
   'submitting agent can resubmit requested corrections'
 );
 select is((select listing_status::text from public.properties where id = 'e1000000-0000-4000-8000-000000000001'), 'submitted', 'corrected listing returns to review');
