@@ -290,7 +290,7 @@ export default function MarketplaceHome() {
         </section>
       </main>
 
-      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© {new Date().getFullYear()} HAMLET · Made for the way Nigeria stays.</small></footer>
+      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
 }
