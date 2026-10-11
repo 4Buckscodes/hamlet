@@ -31,6 +31,7 @@ type IntakeSubmission = {
 }
 
 const money = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
+const displayDate = (value: string) => new Date(value).toLocaleDateString('en-NG')
 const documents = (item: IntakeSubmission) => [
   item.has_approved_building_plan ? 'Approved building plan' : null,
   item.has_cofo ? 'C of O' : null,
@@ -40,18 +41,13 @@ const documents = (item: IntakeSubmission) => [
 
 export default function PropertyIntakeQueue() {
   const [items, setItems] = useState<IntakeSubmission[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(isSupabaseConfigured && supabase))
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   const refresh = useCallback(async () => {
-    if (!supabase || !isSupabaseConfigured) {
-      setLoading(false)
-      setError('Supabase is not configured.')
-      return
-    }
-    setLoading(true)
+    if (!supabase || !isSupabaseConfigured) return
     const { data, error: loadError } = await supabase
       .from('property_intake_submissions')
       .select('id, contact_name, contact_phone, contact_email, submitter_role, property_title, city, area, property_type, bedrooms, bathrooms, max_guests, nightly_rate, listing_url, photos_url, availability, available_from, amenities, has_approved_building_plan, has_cofo, has_governors_consent, has_other_documents, status, review_notes, created_at, converted_property_id')
@@ -66,6 +62,11 @@ export default function PropertyIntakeQueue() {
   }, [])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  const handleRefresh = () => {
+    setLoading(true)
+    void refresh()
+  }
 
   const updateStatus = async (item: IntakeSubmission, status: 'contacted' | 'rejected') => {
     if (!supabase) return
@@ -102,7 +103,7 @@ export default function PropertyIntakeQueue() {
     <section className="agent-panel agent-wide-panel hm-intake-admin">
       <div className="agent-panel-heading">
         <div><h3>Founding property intake</h3><p>Public submissions are private to admins. Review the contact and evidence, then convert suitable submissions into the existing listing review queue.</p></div>
-        <button className="agent-secondary" type="button" onClick={() => void refresh()} disabled={loading}>Refresh</button>
+        <button className="agent-secondary" type="button" onClick={handleRefresh} disabled={loading}>Refresh</button>
       </div>
       {error && <p className="agent-alert error">{error}</p>}
       {message && <p className="agent-alert success">{message}</p>}
@@ -111,7 +112,7 @@ export default function PropertyIntakeQueue() {
           {items.map((item) => (
             <article className="agent-record hm-intake-admin-record" key={item.id}>
               <div className="agent-record-title">
-                <div><strong>{item.property_title}</strong><span>{item.area}, {item.city} · {money(item.nightly_rate)} / night · Received {new Date(item.created_at).toLocaleDateString('en-NG')}</span></div>
+                <div><strong>{item.property_title}</strong><span>{item.area}, {item.city} · {money(item.nightly_rate)} / night · Received {displayDate(item.created_at)}</span></div>
                 <span className={`agent-status ${item.status}`}>{item.status}</span>
               </div>
               <div className="hm-intake-admin-grid">
