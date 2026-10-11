@@ -388,7 +388,7 @@ export default function AgentPortal() {
     if (!supabase) return
     const { error: assignError } = await supabase.rpc('assign_property_agent', { p_property_id: propertyId, p_agent_id: agentId })
     if (assignError) setError(assignError.message)
-    else { setMessage('Agent assignment recorded.'); await refresh() }
+    else { setMessage('Partner assignment recorded.'); await refresh() }
   }
 
   const submitOffer = async (event: FormEvent<HTMLFormElement>) => {
@@ -500,7 +500,7 @@ export default function AgentPortal() {
         <div className="agent-authenticated">
           <div className="agent-session-bar">
             <div><strong>{dashboard.profile?.display_name || session.user.email}</strong><span>{session.user.email}</span></div>
-            <div className="agent-session-actions"><span className={`agent-status ${dashboard.profile?.role === 'agent' ? dashboard.profile.agent_status : 'active'}`}>{dashboard.profile?.role === 'agent' ? `${dashboard.profile.agent_status} agent` : dashboard.profile?.role}</span><button className="agent-secondary" type="button" onClick={handleSignOut}>Sign out</button></div>
+            <div className="agent-session-actions"><span className={`agent-status ${dashboard.profile?.role === 'agent' ? dashboard.profile.agent_status : 'active'}`}>{dashboard.profile?.role === 'agent' ? `${dashboard.profile.agent_status} partner` : dashboard.profile?.role}</span><button className="agent-secondary" type="button" onClick={handleSignOut}>Sign out</button></div>
           </div>
           {dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active' && <div className="agent-alert info">Your application is {dashboard.profile.agent_status}. Property submission, offer acceptance, and assigned workflows become available after HAMLET approval.</div>}
           {error && <p className="agent-alert error">{error}</p>}
@@ -614,7 +614,7 @@ export default function AgentPortal() {
               <form className="agent-owner-controls" onSubmit={submitOffer}>
                 <label className="agent-field"><span>Offer property</span><select name="property_id" required onChange={(event) => void loadAgentsForProperty(event.target.value)}>{dashboard.listings.filter((listing) => listing.owner_id === session.user.id || listing.submitted_by === session.user.id || dashboard.profile?.role === 'admin').map((listing) => <option key={listing.id} value={listing.id}>{listing.title}</option>)}</select></label>
                 <label className="agent-field"><span>Assigned agent</span><select name="agent_id" required>{dashboard.agents.map((agent) => <option key={agent.agent_id} value={agent.agent_id}>{agent.display_name}</option>)}</select></label>
-                <label className="agent-field"><span>Commercial term</span><select name="offer_kind"><option value="agent_payout">Fixed agent payout</option><option value="owner_net_rate">Owner net-rate offer</option></select></label>
+                <label className="agent-field"><span>Commercial term</span><select name="offer_kind"><option value="agent_payout">Fixed partner payout</option><option value="owner_net_rate">Owner net-rate offer</option></select></label>
                 <label className="agent-field"><span>Amount (NGN)</span><input name="amount" type="number" min="0" step="1" required /></label>
                 <button className="agent-primary" type="submit">Publish terms v1</button>
               </form>
@@ -628,7 +628,7 @@ export default function AgentPortal() {
                   const currentVersion = offer.versions?.find((version) => version.id === offer.current_version_id)
                   return <article className="agent-offer" key={offer.id}>
                     <div><span className="agent-eyebrow">{offer.offer_kind === 'agent_payout' ? 'FIXED AGENT PAYOUT' : 'OWNER NET-RATE OFFER'}</span><h4>{offer.property?.title ?? 'Assigned property'}</h4><p>{offer.property?.city ?? ''} · Version {currentVersion?.version ?? '?'}</p></div>
-                    <div className="agent-offer-terms"><strong>{currentVersion ? formatNaira(currentVersion.amount) : 'Terms unavailable'}</strong><span>{offer.offer_kind === 'agent_payout' ? 'agreed agent fee' : 'owner net rate'} · NGN</span><button className="agent-primary" type="button" disabled={busy || !currentVersion || dashboard.profile?.agent_status !== 'active'} onClick={() => void acceptOffer(offer)}>Accept v{currentVersion?.version ?? '?'}</button></div>
+                    <div className="agent-offer-terms"><strong>{currentVersion ? formatNaira(currentVersion.amount) : 'Terms unavailable'}</strong><span>{offer.offer_kind === 'agent_payout' ? 'agreed partner fee' : 'owner net rate'} · NGN</span><button className="agent-primary" type="button" disabled={busy || !currentVersion || dashboard.profile?.agent_status !== 'active'} onClick={() => void acceptOffer(offer)}>Accept v{currentVersion?.version ?? '?'}</button></div>
                   </article>
                 })}
               </div>
@@ -646,12 +646,12 @@ export default function AgentPortal() {
             <section className="agent-panel agent-wide-panel">
               <h3>Bookings and earnings visibility</h3>
               <p>These figures show booking state and agreed terms only. HAMLET has no settlement integration here; no payout or settlement is represented as completed.</p>
-              {dashboard.earnings.length === 0 ? <p className="agent-empty">No assigned booking records are visible yet.</p> : <div className="agent-table-wrap"><table className="agent-table"><thead><tr><th>Reference</th><th>Dates</th><th>Booking</th><th>Accommodation</th><th>Accepted commercial term</th><th>Settlement</th></tr></thead><tbody>{dashboard.earnings.map((earning) => <tr key={earning.booking_id}><td>{earning.guest_reference}</td><td>{earning.check_in} to {earning.check_out}</td><td>{earning.booking_state}</td><td>{formatNaira(earning.accommodation_total)}</td><td>{earning.commercial_term_amount === null ? 'Not recorded' : `${earning.commercial_term_kind === 'agent_payout' ? 'Agent payout' : 'Owner net rate'}: ${formatNaira(earning.commercial_term_amount)}`}</td><td>{earning.settlement_state.replaceAll('_', ' ')}</td></tr>)}</tbody></table></div>}
+              {dashboard.earnings.length === 0 ? <p className="agent-empty">No assigned booking records are visible yet.</p> : <div className="agent-table-wrap"><table className="agent-table"><thead><tr><th>Reference</th><th>Dates</th><th>Booking</th><th>Accommodation</th><th>Accepted commercial term</th><th>Settlement</th></tr></thead><tbody>{dashboard.earnings.map((earning) => <tr key={earning.booking_id}><td>{earning.guest_reference}</td><td>{earning.check_in} to {earning.check_out}</td><td>{earning.booking_state}</td><td>{formatNaira(earning.accommodation_total)}</td><td>{earning.commercial_term_amount === null ? 'Not recorded' : `${earning.commercial_term_kind === 'agent_payout' ? 'Partner payout' : 'Owner net rate'}: ${formatNaira(earning.commercial_term_amount)}`}</td><td>{earning.settlement_state.replaceAll('_', ' ')}</td></tr>)}</tbody></table></div>}
             </section>
 
             <section className="agent-panel agent-wide-panel">
               <div className="agent-panel-heading"><div><h3>Notification centre</h3><p>Assignment, correction, and commercial-term notices for this account.</p></div><span className="agent-status development">{dashboard.notifications.filter((notification) => !notification.read_at).length} unread</span></div>
-              <div className="agent-record-list">{dashboard.notifications.length === 0 ? <p className="agent-empty">No agent notifications yet.</p> : dashboard.notifications.map((notification) => <article className={`agent-notification ${notification.read_at ? 'read' : ''}`} key={notification.id}><div><span>{notification.event_type.replaceAll('_', ' ')}</span><p>{notification.message}</p><time>{notification.created_at.slice(0, 16).replace('T', ' ')} UTC</time></div>{!notification.read_at && <button className="agent-text-link" type="button" onClick={() => void markNotificationRead(notification.id)}>Mark read</button>}</article>)}</div>
+              <div className="agent-record-list">{dashboard.notifications.length === 0 ? <p className="agent-empty">No partner notifications yet.</p> : dashboard.notifications.map((notification) => <article className={`agent-notification ${notification.read_at ? 'read' : ''}`} key={notification.id}><div><span>{notification.event_type.replaceAll('_', ' ')}</span><p>{notification.message}</p><time>{notification.created_at.slice(0, 16).replace('T', ' ')} UTC</time></div>{!notification.read_at && <button className="agent-text-link" type="button" onClick={() => void markNotificationRead(notification.id)}>Mark read</button>}</article>)}</div>
             </section>
           </div>
         </div>
