@@ -32,14 +32,12 @@ select lives_ok(
 select throws_ok(
   $$select count(*) from public.property_intake_submissions$$,
   '42501',
-  null,
   'anonymous visitor cannot read intake records'
 );
 
 select throws_ok(
   $$update public.property_intake_submissions set status = 'accepted'$$,
   '42501',
-  null,
   'anonymous visitor cannot update intake records'
 );
 
