@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import AgentPortal from './AgentPortal'
 import PropertyIntake from './PropertyIntake'
+import { calculateHamletPrice } from './hamletCore'
 import './MarketplaceHome.css'
 
 type Stay = {
@@ -99,6 +100,7 @@ const categories = [
 ]
 
 const naira = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
+const guestFacingNightlyPrice = (accommodationNightlyRate: number) => calculateHamletPrice({ accommodationSubtotal: accommodationNightlyRate }).guestTotal
 
 function AppLogo() {
   return (
@@ -127,8 +129,8 @@ export default function MarketplaceHome() {
       return matchesCity && matchesCategory && matchesQuery
     })
 
-    if (sort === 'price-low') result.sort((a, b) => a.price - b.price)
-    if (sort === 'price-high') result.sort((a, b) => b.price - a.price)
+    if (sort === 'price-low') result.sort((a, b) => guestFacingNightlyPrice(a.price) - guestFacingNightlyPrice(b.price))
+    if (sort === 'price-high') result.sort((a, b) => guestFacingNightlyPrice(b.price) - guestFacingNightlyPrice(a.price))
     return result
   }, [city, category, query, sort])
 
@@ -258,7 +260,7 @@ export default function MarketplaceHome() {
                     <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>✦ {stay.rating}</span></div>
                     <h3>{stay.title}</h3>
                     <p className="hm-stay-features">{stay.features.join(' · ')}</p>
-                    <div className="hm-stay-bottom"><p><strong>{naira(stay.price)}</strong> <span>/ night (illustrative)</span></p><button type="button" onClick={() => enquire(stay)}>Enquire ↗</button></div>
+                    <div className="hm-stay-bottom"><p><strong>{naira(guestFacingNightlyPrice(stay.price))}</strong> <span>/ night · fee included (illustrative)</span></p><button type="button" onClick={() => enquire(stay)}>Enquire ↗</button></div>
                     <div className="hm-stay-tagline">{stay.tag}</div>
                   </div>
                 </article>
