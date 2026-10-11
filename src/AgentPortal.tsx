@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './AgentPortal.css'
+import PropertyIntakeQueue from './PropertyIntakeQueue'
 
 type AgentProfile = {
   role: 'agent' | 'owner' | 'admin'
@@ -479,6 +480,8 @@ export default function AgentPortal() {
           {message && <p className="agent-alert success">{message}</p>}
 
           <div className="agent-workspace-grid">
+            {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
+
             {dashboard.profile?.role === 'admin' && <section className="agent-panel agent-wide-panel">
               <h3>Agent applications review</h3>
               <p>Admin-only approvals are enforced by the review RPC, not by this interface.</p>
