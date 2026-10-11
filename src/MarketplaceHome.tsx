@@ -155,11 +155,11 @@ export default function MarketplaceHome() {
           <a href="#explore" onClick={() => setMobileMenuOpen(false)}>Explore stays</a>
           <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How HAMLET works</a>
           <a href="#property-intake" onClick={() => setMobileMenuOpen(false)}>List a property</a>
-          <a href="#agent-workspace" onClick={() => setMobileMenuOpen(false)}>Agent sign up / sign in</a>
+          <a href="#agent-workspace" onClick={() => setMobileMenuOpen(false)}>Partner workspace</a>
         </nav>
         <div className="hm-header-actions">
           <a className="hm-host-link" href="#property-intake">List your property</a>
-          <a className="hm-profile-button" href="#agent-workspace" aria-label="Agent sign up or sign in">Join network ↗</a>
+          <a className="hm-profile-button" href="#agent-workspace" aria-label="Open partner workspace">Join network ↗</a>
         </div>
         <button className="hm-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>☰</button>
       </header>
@@ -286,7 +286,7 @@ export default function MarketplaceHome() {
         <PropertyIntake />
 
         <section className="hm-workspace" id="agent-workspace">
-          <div className="hm-workspace-heading"><span className="hm-eyebrow">OWNER & AGENT TOOLS</span><h2>One place to move the work forward.</h2><p>Owners and agents can submit properties and track reviews. Create an agent account below to join the network; admin access is granted separately by HAMLET.</p></div>
+          <div className="hm-workspace-heading"><span className="hm-eyebrow">HAMLET PARTNER NETWORK</span><h2>One place to move the work forward.</h2><p>Owners and agents can submit properties and track reviews. Owners, agents, property managers and authorised shortlet partners can create an account, submit properties and track reviews. Admin access is granted separately by HAMLET.</p></div>
           <AgentPortal />
         </section>
       </main>
