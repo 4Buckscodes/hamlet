@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AgentPortal from './AgentPortal'
 import PropertyIntake from './PropertyIntake'
 import { calculateHamletPrice } from './hamletCore'
+import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './MarketplaceHome.css'
 
 type Stay = {
-  id: number
+  id: string
   title: string
   area: string
   city: 'Lagos' | 'Abuja' | 'Ibadan'
@@ -19,7 +20,7 @@ type Stay = {
 
 const stays: Stay[] = [
   {
-    id: 1,
+    id: 'sample-1',
     title: 'Warm, modern apartment with a city view',
     area: 'Lekki Phase 1',
     city: 'Lagos',
@@ -31,7 +32,7 @@ const stays: Stay[] = [
     tag: 'Guest favourite style',
   },
   {
-    id: 2,
+    id: 'sample-2',
     title: 'Quiet designer stay with a private balcony',
     area: 'Victoria Island',
     city: 'Lagos',
@@ -43,7 +44,7 @@ const stays: Stay[] = [
     tag: 'Design-led',
   },
   {
-    id: 3,
+    id: 'sample-3',
     title: 'Room for everyone in a bright family home',
     area: 'Ikeja GRA',
     city: 'Lagos',
@@ -55,7 +56,7 @@ const stays: Stay[] = [
     tag: 'Made for families',
   },
   {
-    id: 4,
+    id: 'sample-4',
     title: 'A calm retreat with thoughtful details',
     area: 'Maitama',
     city: 'Abuja',
@@ -67,7 +68,7 @@ const stays: Stay[] = [
     tag: 'Calm and considered',
   },
   {
-    id: 5,
+    id: 'sample-5',
     title: 'Spacious home for a group weekend',
     area: 'Wuse 2',
     city: 'Abuja',
@@ -79,7 +80,7 @@ const stays: Stay[] = [
     tag: 'Group-ready style',
   },
   {
-    id: 6,
+    id: 'sample-6',
     title: 'Simple, stylish apartment for a city break',
     area: 'New Bodija',
     city: 'Ibadan',
@@ -112,18 +113,63 @@ function AppLogo() {
 }
 
 export default function MarketplaceHome() {
-  const [city, setCity] = useState('Anywhere')
+  const [city, setCity] = useState('Lagos')
   const [category, setCategory] = useState('All stays')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('recommended')
-  const [saved, setSaved] = useState<number[]>([])
+  const [saved, setSaved] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [liveStays, setLiveStays] = useState<Stay[] | null>(null)
+  const [listingLoadError, setListingLoadError] = useState(false)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    let cancelled = false
+    void supabase
+      .from('properties')
+      .select('id, title, city, area, property_type, bedrooms, bathrooms, max_guests, nightly_rate, photos_url, amenities, updated_at')
+      .eq('city', 'Lagos')
+      .order('updated_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) {
+          setListingLoadError(true)
+          setLiveStays([])
+          return
+        }
+
+        setLiveStays((data ?? []).map((property) => ({
+          id: property.id,
+          title: property.title,
+          area: property.area,
+          city: 'Lagos' as const,
+          type: property.property_type,
+          price: Number(property.nightly_rate),
+          rating: 'HAMLET reviewed',
+          image: property.photos_url,
+          features: [
+            `${property.max_guests} guests`,
+            `${property.bedrooms} bedrooms`,
+            `${property.bathrooms} baths`,
+          ],
+          tag: 'Approved Lagos listing',
+        })))
+      })
+
+    return () => { cancelled = true }
+  }, [])
+
+  const sourceStays = useMemo(
+    () => isSupabaseConfigured ? (liveStays ?? []) : stays.filter((stay) => stay.city === 'Lagos'),
+    [liveStays],
+  )
 
   const visibleStays = useMemo(() => {
     const normalisedQuery = query.trim().toLowerCase()
-    const result = stays.filter((stay) => {
-      const matchesCity = city === 'Anywhere' || stay.city === city
+    const result = sourceStays.filter((stay) => {
+      const matchesCity = stay.city === city
       const matchesCategory = category === 'All stays' || stay.type === category
       const matchesQuery = !normalisedQuery || [stay.title, stay.area, stay.city, stay.type].some((value) => value.toLowerCase().includes(normalisedQuery))
       return matchesCity && matchesCategory && matchesQuery
@@ -132,7 +178,7 @@ export default function MarketplaceHome() {
     if (sort === 'price-low') result.sort((a, b) => guestFacingNightlyPrice(a.price) - guestFacingNightlyPrice(b.price))
     if (sort === 'price-high') result.sort((a, b) => guestFacingNightlyPrice(b.price) - guestFacingNightlyPrice(a.price))
     return result
-  }, [city, category, query, sort])
+  }, [sourceStays, city, category, query, sort])
 
   const enquire = (stay: Stay) => {
     const message = encodeURIComponent(`Hi HAMLET, I'd like to enquire about this sample stay: ${stay.title} in ${stay.area}, ${stay.city}. Please share how I can find verified, available properties like this.`)
@@ -140,7 +186,7 @@ export default function MarketplaceHome() {
     window.open(number ? `https://wa.me/${number}?text=${message}` : `https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer')
   }
 
-  const toggleSaved = (id: number) => {
+  const toggleSaved = (id: string) => {
     setSaved((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
   }
 
@@ -148,7 +194,7 @@ export default function MarketplaceHome() {
     <div className="hm-app" id="home">
       <div className="hm-preview-notice">
         <span className="hm-notice-dot" />
-        Marketplace UI preview · Sample listings only — live availability and verification are not connected yet
+        {isSupabaseConfigured ? 'Approved Lagos property inventory · availability is confirmed after a booking request' : 'Marketplace UI preview · Sample listings only — live availability and verification are not connected yet'}
       </div>
 
       <header className="hm-header">
@@ -186,10 +232,7 @@ export default function MarketplaceHome() {
             <label className="hm-search-field hm-destination">
               <span>Where</span>
               <select value={city} onChange={(event) => setCity(event.target.value)} aria-label="Choose city">
-                <option>Anywhere</option>
                 <option>Lagos</option>
-                <option>Abuja</option>
-                <option>Ibadan</option>
               </select>
             </label>
             <label className="hm-search-field hm-search-text">
@@ -226,7 +269,7 @@ export default function MarketplaceHome() {
             <div className="hm-filter-panel">
               <label>Destination
                 <select value={city} onChange={(event) => setCity(event.target.value)}>
-                  <option>Anywhere</option><option>Lagos</option><option>Abuja</option><option>Ibadan</option>
+                  <option>Lagos</option>
                 </select>
               </label>
               <label>Sort by
@@ -234,7 +277,7 @@ export default function MarketplaceHome() {
                   <option value="recommended">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option>
                 </select>
               </label>
-              <button type="button" className="hm-clear-filters" onClick={() => { setCity('Anywhere'); setCategory('All stays'); setQuery(''); setSort('recommended') }}>Clear all</button>
+              <button type="button" className="hm-clear-filters" onClick={() => { setCity('Lagos'); setCategory('All stays'); setQuery(''); setSort('recommended') }}>Clear all</button>
             </div>
           )}
 
@@ -246,7 +289,9 @@ export default function MarketplaceHome() {
             ))}
           </div>
 
-          <div className="hm-results-meta"><span>{visibleStays.length} preview {visibleStays.length === 1 ? 'stay' : 'stays'}</span><span>Illustrative listings · not bookable yet</span></div>
+          <div className="hm-results-meta"><span>{visibleStays.length} {isSupabaseConfigured ? 'approved' : 'preview'} {visibleStays.length === 1 ? 'stay' : 'stays'}</span><span>{isSupabaseConfigured ? 'Lagos inventory · request availability before confirmation' : 'Illustrative listings · not bookable yet'}</span></div>
+          {listingLoadError && <p role="status">We couldn't load approved properties right now. Please try again shortly.</p>}
+          {isSupabaseConfigured && liveStays === null && <p role="status">Loading approved Lagos properties…</p>}
           {visibleStays.length > 0 ? (
             <div className="hm-stay-grid">
               {visibleStays.map((stay) => (
@@ -257,7 +302,7 @@ export default function MarketplaceHome() {
                     <button className={saved.includes(stay.id) ? 'hm-save-button saved' : 'hm-save-button'} type="button" onClick={() => toggleSaved(stay.id)} aria-label={saved.includes(stay.id) ? 'Remove from saved stays' : 'Save stay'} aria-pressed={saved.includes(stay.id)}>{saved.includes(stay.id) ? '♥' : '♡'}</button>
                   </div>
                   <div className="hm-stay-card-content">
-                    <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>✦ {stay.rating}</span></div>
+                    <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>{stay.rating}</span></div>
                     <h3>{stay.title}</h3>
                     <p className="hm-stay-features">{stay.features.join(' · ')}</p>
                     <div className="hm-stay-bottom"><p><strong>{naira(guestFacingNightlyPrice(stay.price))}</strong> <span>/ night · fee included (illustrative)</span></p><button type="button" onClick={() => enquire(stay)}>Enquire ↗</button></div>
@@ -267,7 +312,7 @@ export default function MarketplaceHome() {
               ))}
             </div>
           ) : (
-            <div className="hm-empty-state"><span>⌕</span><h3>No preview stays match that search.</h3><p>Try another neighbourhood or clear your filters.</p><button type="button" onClick={() => { setCity('Anywhere'); setCategory('All stays'); setQuery('') }}>Show all stays</button></div>
+            <div className="hm-empty-state"><span>⌕</span><h3>No preview stays match that search.</h3><p>Try another neighbourhood or clear your filters.</p><button type="button" onClick={() => { setCity('Lagos'); setCategory('All stays'); setQuery('') }}>Show all stays</button></div>
           )}
         </section>
 
