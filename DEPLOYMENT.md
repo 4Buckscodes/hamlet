@@ -50,3 +50,16 @@
 ## Useful note
 
 The project includes a Vercel config file and a public social image file so deployment is simpler and the project is easier to share publicly.
+
+
+## Supabase: public property intake
+
+The founding property intake form requires the Supabase project to have both migrations applied:
+
+- `supabase/migrations/202610090001_agent_experience.sql`
+- `supabase/migrations/202610110001_property_intake.sql`
+- `supabase/migrations/202610110002_property_intake_admin.sql`
+
+Apply migrations in order using the Supabase CLI linked to the correct project, then redeploy the Vercel preview. The public intake form can insert submissions only; it cannot read, edit, approve, or publish them. Only a signed-in HAMLET admin can view the intake queue in the owner/agent workspace and convert a suitable submission into the existing listing review queue.
+
+Before relying on the public intake in production, verify that RLS is enabled, the three migrations applied successfully, and the admin account is provisioned through a trusted process. Do not put a Supabase service-role key in Vercel client-side variables or commit secrets to GitHub. Use only `VITE_SUPABASE_URL` and the public `VITE_SUPABASE_ANON_KEY` in the browser.

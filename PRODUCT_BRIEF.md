@@ -25,9 +25,8 @@ Shortlets, with accountability.
 Founding phase. This is an early market-validation product designed to learn what demand, trust, and operational friction exist in Nigeria's shortlet market before scaling the wider platform.
 
 ## Initial market
-- Lagos
-- Abuja
-- Ibadan
+- Lagos first for the controlled MVP pilot
+- Abuja and Ibadan are deferred until the Lagos operating process is reliable
 
 ## Target users
 ### Guests
@@ -51,12 +50,12 @@ Shortlet owners, property managers, and operators who need better tools to:
 People who understand the shortlet business and can help define what the product should become.
 
 ## Primary goals
-1. Introduce HAMLET clearly and credibly.
-2. Build trust without overclaiming.
-3. Recruit founding shortlet owners and managers.
-4. Capture guest demand, especially around December.
-5. Gather structured market research.
-6. Create a foundation for the future HAMLET marketplace.
+1. Onboard at least 50 approved properties by 31 October 2026.
+2. Let guests discover genuine approved properties and submit request-to-book enquiries.
+3. Complete a reliable booking, payment confirmation and reconciliation journey.
+4. Give owners and authorised partners clear roles, permissions and visibility.
+5. Resolve guest/owner issues through a documented accountability workflow.
+6. Validate demand and operating economics through completed bookings, not registrations alone.
 
 ## Positioning principles
 - Premium but practical
@@ -103,3 +102,7 @@ The website should clearly communicate that HAMLET is in its early stage, with e
 
 ## Launch intent
 The initial landing page is not meant to replace a large marketplace. It is meant to be the first door into a much larger company: a trustworthy, accountable shortlet operating system for Africa.
+
+## Locked MVP decisions
+
+See [MVP_SPECIFICATION.md](./MVP_SPECIFICATION.md) for the current scope, pricing rules, implementation order and launch dependencies. The guest-only HAMLET service fee is 3% and is included in the displayed total. The exact payment-provider processing-fee policy remains undecided and must not be hard-coded.

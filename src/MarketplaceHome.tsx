@@ -1,14 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AgentPortal from './AgentPortal'
+import PropertyIntake from './PropertyIntake'
+import { calculateHamletPrice } from './hamletCore'
+import BookingRequestModal from './BookingRequestModal'
+import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './MarketplaceHome.css'
 
 type Stay = {
-  id: number
+  id: string
   title: string
   area: string
   city: 'Lagos' | 'Abuja' | 'Ibadan'
   type: string
   price: number
+  maxGuests: number
   rating: string
   image: string
   features: string[]
@@ -17,7 +22,8 @@ type Stay = {
 
 const stays: Stay[] = [
   {
-    id: 1,
+    id: 'sample-1',
+    maxGuests: 2,
     title: 'Warm, modern apartment with a city view',
     area: 'Lekki Phase 1',
     city: 'Lagos',
@@ -29,7 +35,8 @@ const stays: Stay[] = [
     tag: 'Guest favourite style',
   },
   {
-    id: 2,
+    id: 'sample-2',
+    maxGuests: 2,
     title: 'Quiet designer stay with a private balcony',
     area: 'Victoria Island',
     city: 'Lagos',
@@ -41,7 +48,8 @@ const stays: Stay[] = [
     tag: 'Design-led',
   },
   {
-    id: 3,
+    id: 'sample-3',
+    maxGuests: 5,
     title: 'Room for everyone in a bright family home',
     area: 'Ikeja GRA',
     city: 'Lagos',
@@ -53,7 +61,8 @@ const stays: Stay[] = [
     tag: 'Made for families',
   },
   {
-    id: 4,
+    id: 'sample-4',
+    maxGuests: 2,
     title: 'A calm retreat with thoughtful details',
     area: 'Maitama',
     city: 'Abuja',
@@ -65,7 +74,8 @@ const stays: Stay[] = [
     tag: 'Calm and considered',
   },
   {
-    id: 5,
+    id: 'sample-5',
+    maxGuests: 4,
     title: 'Spacious home for a group weekend',
     area: 'Wuse 2',
     city: 'Abuja',
@@ -77,7 +87,8 @@ const stays: Stay[] = [
     tag: 'Group-ready style',
   },
   {
-    id: 6,
+    id: 'sample-6',
+    maxGuests: 2,
     title: 'Simple, stylish apartment for a city break',
     area: 'New Bodija',
     city: 'Ibadan',
@@ -98,6 +109,7 @@ const categories = [
 ]
 
 const naira = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
+const guestFacingNightlyPrice = (accommodationNightlyRate: number) => calculateHamletPrice({ accommodationSubtotal: accommodationNightlyRate }).guestTotal
 
 function AppLogo() {
   return (
@@ -109,27 +121,74 @@ function AppLogo() {
 }
 
 export default function MarketplaceHome() {
-  const [city, setCity] = useState('Anywhere')
+  const [city, setCity] = useState('Lagos')
   const [category, setCategory] = useState('All stays')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('recommended')
-  const [saved, setSaved] = useState<number[]>([])
+  const [saved, setSaved] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [liveStays, setLiveStays] = useState<Stay[] | null>(null)
+  const [listingLoadError, setListingLoadError] = useState(false)
+  const [selectedStay, setSelectedStay] = useState<Stay | null>(null)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    let cancelled = false
+    void supabase
+      .from('properties')
+      .select('id, title, city, area, property_type, bedrooms, bathrooms, max_guests, nightly_rate, photos_url, amenities, updated_at')
+      .eq('city', 'Lagos')
+      .order('updated_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) {
+          setListingLoadError(true)
+          setLiveStays([])
+          return
+        }
+
+        setLiveStays((data ?? []).map((property) => ({
+          id: property.id,
+          title: property.title,
+          area: property.area,
+          city: 'Lagos' as const,
+          type: property.property_type,
+          price: Number(property.nightly_rate),
+          maxGuests: Number(property.max_guests),
+          rating: 'HAMLET reviewed',
+          image: property.photos_url,
+          features: [
+            `${property.max_guests} guests`,
+            `${property.bedrooms} bedrooms`,
+            `${property.bathrooms} baths`,
+          ],
+          tag: 'Approved Lagos listing',
+        })))
+      })
+
+    return () => { cancelled = true }
+  }, [])
+
+  const sourceStays = useMemo(
+    () => isSupabaseConfigured ? (liveStays ?? []) : stays.filter((stay) => stay.city === 'Lagos'),
+    [liveStays],
+  )
 
   const visibleStays = useMemo(() => {
     const normalisedQuery = query.trim().toLowerCase()
-    const result = stays.filter((stay) => {
-      const matchesCity = city === 'Anywhere' || stay.city === city
+    const result = sourceStays.filter((stay) => {
+      const matchesCity = stay.city === city
       const matchesCategory = category === 'All stays' || stay.type === category
       const matchesQuery = !normalisedQuery || [stay.title, stay.area, stay.city, stay.type].some((value) => value.toLowerCase().includes(normalisedQuery))
       return matchesCity && matchesCategory && matchesQuery
     })
 
-    if (sort === 'price-low') result.sort((a, b) => a.price - b.price)
-    if (sort === 'price-high') result.sort((a, b) => b.price - a.price)
+    if (sort === 'price-low') result.sort((a, b) => guestFacingNightlyPrice(a.price) - guestFacingNightlyPrice(b.price))
+    if (sort === 'price-high') result.sort((a, b) => guestFacingNightlyPrice(b.price) - guestFacingNightlyPrice(a.price))
     return result
-  }, [city, category, query, sort])
+  }, [sourceStays, city, category, query, sort])
 
   const enquire = (stay: Stay) => {
     const message = encodeURIComponent(`Hi HAMLET, I'd like to enquire about this sample stay: ${stay.title} in ${stay.area}, ${stay.city}. Please share how I can find verified, available properties like this.`)
@@ -137,7 +196,7 @@ export default function MarketplaceHome() {
     window.open(number ? `https://wa.me/${number}?text=${message}` : `https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer')
   }
 
-  const toggleSaved = (id: number) => {
+  const toggleSaved = (id: string) => {
     setSaved((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
   }
 
@@ -145,7 +204,7 @@ export default function MarketplaceHome() {
     <div className="hm-app" id="home">
       <div className="hm-preview-notice">
         <span className="hm-notice-dot" />
-        Marketplace UI preview · Sample listings only — live availability and verification are not connected yet
+        {isSupabaseConfigured ? 'Approved Lagos property inventory · live booking requests are coming next' : 'Marketplace UI preview · Sample listings only — live availability and verification are not connected yet'}
       </div>
 
       <header className="hm-header">
@@ -153,11 +212,12 @@ export default function MarketplaceHome() {
         <nav className={mobileMenuOpen ? 'hm-nav hm-nav-open' : 'hm-nav'} aria-label="Main navigation">
           <a href="#explore" onClick={() => setMobileMenuOpen(false)}>Explore stays</a>
           <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How HAMLET works</a>
-          <a href="#owners" onClick={() => setMobileMenuOpen(false)}>For owners & agents</a>
+          <a href="#property-intake" onClick={() => setMobileMenuOpen(false)}>List a property</a>
+          <a href="#agent-workspace" onClick={() => setMobileMenuOpen(false)}>Partner workspace</a>
         </nav>
         <div className="hm-header-actions">
-          <a className="hm-host-link" href="#owners">List your property</a>
-          <a className="hm-profile-button" href="#owners" aria-label="Owner and agent workspace">↗</a>
+          <a className="hm-host-link" href="#property-intake">List your property</a>
+          <a className="hm-profile-button" href="#agent-workspace" aria-label="Open partner workspace">Join network ↗</a>
         </div>
         <button className="hm-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>☰</button>
       </header>
@@ -167,7 +227,7 @@ export default function MarketplaceHome() {
           <div className="hm-hero-copy">
             <span className="hm-eyebrow"><span /> BETTER STAYS. REAL ACCOUNTABILITY.</span>
             <h1>Feel at home.<br /><em>Stay with confidence.</em></h1>
-            <p>Discover shortlets across Nigeria with clearer information, accountable people, and a better way to find your next stay.</p>
+            <p>Discover Lagos shortlets with clearer information, accountable people, and a better way to find your next stay.</p>
           </div>
           <div className="hm-hero-image" role="img" aria-label="Sunlit contemporary living room">
             <div className="hm-image-caption">
@@ -182,15 +242,12 @@ export default function MarketplaceHome() {
             <label className="hm-search-field hm-destination">
               <span>Where</span>
               <select value={city} onChange={(event) => setCity(event.target.value)} aria-label="Choose city">
-                <option>Anywhere</option>
                 <option>Lagos</option>
-                <option>Abuja</option>
-                <option>Ibadan</option>
               </select>
             </label>
             <label className="hm-search-field hm-search-text">
               <span>Neighbourhood or stay</span>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try Lekki, Maitama..." aria-label="Search neighbourhood or stay" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try Lekki, Ikeja..." aria-label="Search neighbourhood or stay" />
             </label>
             <label className="hm-search-field hm-guests">
               <span>Who is coming?</span>
@@ -222,7 +279,7 @@ export default function MarketplaceHome() {
             <div className="hm-filter-panel">
               <label>Destination
                 <select value={city} onChange={(event) => setCity(event.target.value)}>
-                  <option>Anywhere</option><option>Lagos</option><option>Abuja</option><option>Ibadan</option>
+                  <option>Lagos</option>
                 </select>
               </label>
               <label>Sort by
@@ -230,7 +287,7 @@ export default function MarketplaceHome() {
                   <option value="recommended">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option>
                 </select>
               </label>
-              <button type="button" className="hm-clear-filters" onClick={() => { setCity('Anywhere'); setCategory('All stays'); setQuery(''); setSort('recommended') }}>Clear all</button>
+              <button type="button" className="hm-clear-filters" onClick={() => { setCity('Lagos'); setCategory('All stays'); setQuery(''); setSort('recommended') }}>Clear all</button>
             </div>
           )}
 
@@ -242,7 +299,9 @@ export default function MarketplaceHome() {
             ))}
           </div>
 
-          <div className="hm-results-meta"><span>{visibleStays.length} preview {visibleStays.length === 1 ? 'stay' : 'stays'}</span><span>Illustrative listings · not bookable yet</span></div>
+          <div className="hm-results-meta"><span>{visibleStays.length} {isSupabaseConfigured ? 'approved' : 'preview'} {visibleStays.length === 1 ? 'stay' : 'stays'}</span><span>{isSupabaseConfigured ? 'Lagos inventory · request availability before confirmation' : 'Illustrative listings · not bookable yet'}</span></div>
+          {listingLoadError && <p role="status">We couldn't load approved properties right now. Please try again shortly.</p>}
+          {isSupabaseConfigured && liveStays === null && <p role="status">Loading approved Lagos properties…</p>}
           {visibleStays.length > 0 ? (
             <div className="hm-stay-grid">
               {visibleStays.map((stay) => (
@@ -253,17 +312,17 @@ export default function MarketplaceHome() {
                     <button className={saved.includes(stay.id) ? 'hm-save-button saved' : 'hm-save-button'} type="button" onClick={() => toggleSaved(stay.id)} aria-label={saved.includes(stay.id) ? 'Remove from saved stays' : 'Save stay'} aria-pressed={saved.includes(stay.id)}>{saved.includes(stay.id) ? '♥' : '♡'}</button>
                   </div>
                   <div className="hm-stay-card-content">
-                    <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>✦ {stay.rating}</span></div>
+                    <div className="hm-stay-location"><strong>{stay.area}, {stay.city}</strong><span>{stay.rating}</span></div>
                     <h3>{stay.title}</h3>
                     <p className="hm-stay-features">{stay.features.join(' · ')}</p>
-                    <div className="hm-stay-bottom"><p><strong>{naira(stay.price)}</strong> <span>/ night (illustrative)</span></p><button type="button" onClick={() => enquire(stay)}>Enquire ↗</button></div>
+                    <div className="hm-stay-bottom"><p><strong>{naira(guestFacingNightlyPrice(stay.price))}</strong> <span>/ night · fee included{isSupabaseConfigured ? '' : ' (illustrative)'}</span></p>{isSupabaseConfigured ? <button type="button" onClick={() => setSelectedStay(stay)}>Request to book ↗</button> : <button type="button" onClick={() => enquire(stay)}>Enquire ↗</button>}</div>
                     <div className="hm-stay-tagline">{stay.tag}</div>
                   </div>
                 </article>
               ))}
             </div>
           ) : (
-            <div className="hm-empty-state"><span>⌕</span><h3>No preview stays match that search.</h3><p>Try another neighbourhood or clear your filters.</p><button type="button" onClick={() => { setCity('Anywhere'); setCategory('All stays'); setQuery('') }}>Show all stays</button></div>
+            <div className="hm-empty-state"><span>⌕</span><h3>No preview stays match that search.</h3><p>Try another neighbourhood or clear your filters.</p><button type="button" onClick={() => { setCity('Lagos'); setCategory('All stays'); setQuery('') }}>Show all stays</button></div>
           )}
         </section>
 
@@ -277,17 +336,20 @@ export default function MarketplaceHome() {
         </section>
 
         <section className="hm-owner-cta" id="owners">
-          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="#agent-workspace">Open owner & agent workspace <span>↗</span></a></div>
+          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="#property-intake">Submit a property <span>↗</span></a></div>
           <div className="hm-owner-visual"><div className="hm-owner-stat"><span>BUILT AROUND REAL PEOPLE</span><strong>Better stays.<br />Brighter returns.</strong><p>For guests, property owners and the agent network.</p></div></div>
         </section>
 
+        <PropertyIntake />
+
         <section className="hm-workspace" id="agent-workspace">
-          <div className="hm-workspace-heading"><span className="hm-eyebrow">OWNER & AGENT TOOLS</span><h2>One place to move the work forward.</h2><p>The existing HAMLET workspace is retained below. Live access depends on Supabase configuration.</p></div>
+          <div className="hm-workspace-heading"><span className="hm-eyebrow">HAMLET PARTNER NETWORK</span><h2>One place to move the work forward.</h2><p>Owners, agents, property managers and authorised shortlet partners can create a HAMLET Partner account, submit properties and track reviews. Admin access is granted separately by HAMLET.</p></div>
           <AgentPortal />
         </section>
       </main>
 
-      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#owners">For owners & agents</a></div><small>© {new Date().getFullYear()} HAMLET · Made for the way Nigeria stays.</small></footer>
+      <BookingRequestModal stay={selectedStay} onClose={() => setSelectedStay(null)} />
+      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
 }

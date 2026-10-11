@@ -14,6 +14,10 @@ HAMLET is a shortlet marketplace and property operating platform for Nigeria, fo
 
 This project is designed as the first public-facing web experience for HAMLET and is intentionally positioned as a founder-led, honest validation tool rather than a fully scaled product.
 
+## Locked MVP and pricing
+
+The current product scope, launch gates and implementation order are documented in [`MVP_SPECIFICATION.md`](./MVP_SPECIFICATION.md). The launch market is Lagos first. HAMLET's guest-only service fee is 3% and is included in the displayed price. Guest-facing totals should use the central pricing function in `src/hamletCore.ts`. The exact payment-provider processing-fee policy remains undecided and must not be hard-coded or charged twice.
+
 ## Current Build
 
 The app includes:
