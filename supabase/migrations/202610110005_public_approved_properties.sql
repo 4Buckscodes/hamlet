@@ -6,7 +6,12 @@ alter table public.properties
 drop policy if exists properties_public_select_approved on public.properties;
 create policy properties_public_select_approved on public.properties
 for select to anon, authenticated
-using (listing_status = 'approved' and is_suspended = false);
+using (
+  listing_status = 'approved'
+  and is_suspended = false
+  and city = 'Lagos'
+  and length(trim(photos_url)) > 0
+);
 
 -- Grant anonymous visitors only the columns needed to display a public listing.
 -- RLS still decides which rows they can see.
