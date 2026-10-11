@@ -105,7 +105,7 @@ create function public.submit_guest_booking_request(
   p_guest_phone text,
   p_check_in date,
   p_check_out date,
-  p_guest_count smallint,
+  p_guest_count integer,
   p_guest_message text default ''
 )
 returns table (
@@ -282,8 +282,8 @@ begin
 end;
 $$;
 
-revoke all on function public.submit_guest_booking_request(uuid, text, text, text, date, date, smallint, text) from public;
-grant execute on function public.submit_guest_booking_request(uuid, text, text, text, date, date, smallint, text) to anon, authenticated;
+revoke all on function public.submit_guest_booking_request(uuid, text, text, text, date, date, integer, text) from public;
+grant execute on function public.submit_guest_booking_request(uuid, text, text, text, date, date, integer, text) to anon, authenticated;
 
 revoke all on function public.set_guest_booking_status(uuid, public.guest_booking_status, timestamptz) from public;
 grant execute on function public.set_guest_booking_status(uuid, public.guest_booking_status, timestamptz) to authenticated;
