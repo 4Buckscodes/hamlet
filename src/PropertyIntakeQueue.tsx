@@ -32,6 +32,7 @@ type IntakeSubmission = {
 
 const money = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
 const displayDate = (value: string) => new Date(value).toLocaleDateString('en-NG')
+const currentTimestamp = () => new Date().toISOString()
 const documents = (item: IntakeSubmission) => [
   item.has_approved_building_plan ? 'Approved building plan' : null,
   item.has_cofo ? 'C of O' : null,
@@ -61,7 +62,33 @@ export default function PropertyIntakeQueue() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    let cancelled = false
+
+    const loadInitialSubmissions = async () => {
+      if (!supabase || !isSupabaseConfigured) {
+        setLoading(false)
+        return
+      }
+
+      const { data, error: loadError } = await supabase
+        .from('property_intake_submissions')
+        .select('id, contact_name, contact_phone, contact_email, submitter_role, property_title, city, area, property_type, bedrooms, bathrooms, max_guests, nightly_rate, listing_url, photos_url, availability, available_from, amenities, has_approved_building_plan, has_cofo, has_governors_consent, has_other_documents, status, review_notes, created_at, converted_property_id')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (cancelled) return
+      if (loadError) setError(`Unable to load property intake queue: ${loadError.message}`)
+      else {
+        setItems((data ?? []) as IntakeSubmission[])
+        setError('')
+      }
+      setLoading(false)
+    }
+
+    void loadInitialSubmissions()
+    return () => { cancelled = true }
+  }, [])
 
   const handleRefresh = () => {
     setLoading(true)
@@ -75,7 +102,7 @@ export default function PropertyIntakeQueue() {
     setMessage('')
     const { error: updateError } = await supabase.from('property_intake_submissions').update({
       status,
-      reviewed_at: new Date().toISOString(),
+      reviewed_at: currentTimestamp(),
     }).eq('id', item.id)
     if (updateError) setError(updateError.message)
     else {

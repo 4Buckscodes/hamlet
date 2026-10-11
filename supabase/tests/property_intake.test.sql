@@ -55,7 +55,7 @@ select is(
 );
 
 select lives_ok(
-  $$select public.convert_property_intake_to_listing((select id from public.property_intake_submissions limit 1))$$,
+  $test$select public.convert_property_intake_to_listing((select id from public.property_intake_submissions limit 1))$test$,
   'admin can convert intake into a listing review record'
 );
 
@@ -88,10 +88,10 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'f0000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select public.review_agent_listing(
+  $$select public.review_agent_listing(
     (select converted_property_id from public.property_intake_submissions limit 1),
     'approved'
-  )$,
+  )$$,
   'admin can approve a property through the review workflow'
 );
 
@@ -107,10 +107,10 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'f0000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select public.admin_set_property_suspension(
+  $$select public.admin_set_property_suspension(
     (select converted_property_id from public.property_intake_submissions limit 1),
     true
-  )$,
+  )$$,
   'admin can suspend an approved property'
 );
 
