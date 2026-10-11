@@ -59,6 +59,7 @@ create policy "Admins can update property intake"
   with check (public.is_admin());
 
 revoke all on public.property_intake_submissions from public, anon, authenticated;
+grant usage on schema public to anon, authenticated;
 grant insert (
   contact_name, contact_phone, contact_email, submitter_role, property_title,
   city, area, property_type, bedrooms, bathrooms, max_guests, nightly_rate,
