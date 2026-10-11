@@ -55,7 +55,7 @@ select is(
 );
 
 select lives_ok(
-  $select public.convert_property_intake_to_listing((select id from public.property_intake_submissions limit 1))$,
+  $test$select public.convert_property_intake_to_listing((select id from public.property_intake_submissions limit 1))$test$,
   'admin can convert intake into a listing review record'
 );
 
