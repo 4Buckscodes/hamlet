@@ -32,6 +32,7 @@ type IntakeSubmission = {
 
 const money = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
 const displayDate = (value: string) => new Date(value).toLocaleDateString('en-NG')
+const currentTimestamp = () => new Date().toISOString()
 const documents = (item: IntakeSubmission) => [
   item.has_approved_building_plan ? 'Approved building plan' : null,
   item.has_cofo ? 'C of O' : null,
@@ -101,7 +102,7 @@ export default function PropertyIntakeQueue() {
     setMessage('')
     const { error: updateError } = await supabase.from('property_intake_submissions').update({
       status,
-      reviewed_at: new Date().toISOString(),
+      reviewed_at: currentTimestamp(),
     }).eq('id', item.id)
     if (updateError) setError(updateError.message)
     else {
