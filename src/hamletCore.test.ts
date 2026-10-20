@@ -6,6 +6,7 @@ import {
   validateBookingWindow,
   calculateSettlement,
 } from './hamletCore'
+import { isSupabaseBrowserKeySafe } from './supabaseClient'
 
 describe('HAMLET booking rules', () => {
   it('rejects invalid or unavailable date windows', () => {
@@ -82,5 +83,23 @@ describe('HAMLET booking rules', () => {
 describe('HAMLET platform fee compatibility', () => {
   it('calculates a percentage fee for legacy callers', () => {
     expect(calculatePlatformFee({ amount: 100000, percent: 3 })).toBe(3000)
+  })
+})
+
+describe('Supabase browser key safety', () => {
+  it('rejects modern secret keys and legacy service-role JWTs', () => {
+    const serviceRolePayload = btoa(JSON.stringify({ role: 'service_role' }))
+    const serviceRoleJwt = `header.${serviceRolePayload}.signature`
+
+    expect(isSupabaseBrowserKeySafe('sb_secret_not-for-browser')).toBe(false)
+    expect(isSupabaseBrowserKeySafe(serviceRoleJwt)).toBe(false)
+  })
+
+  it('accepts publishable keys and legacy anon JWTs', () => {
+    const anonPayload = btoa(JSON.stringify({ role: 'anon' }))
+    const anonJwt = `header.${anonPayload}.signature`
+
+    expect(isSupabaseBrowserKeySafe('sb_publishable_public-key')).toBe(true)
+    expect(isSupabaseBrowserKeySafe(anonJwt)).toBe(true)
   })
 })
