@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import AgentPortal from './AgentPortal'
-import PropertyIntake from './PropertyIntake'
 import { calculateHamletPrice } from './hamletCore'
 import BookingRequestModal from './BookingRequestModal'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
@@ -212,12 +210,10 @@ export default function MarketplaceHome() {
         <nav className={mobileMenuOpen ? 'hm-nav hm-nav-open' : 'hm-nav'} aria-label="Main navigation">
           <a href="#explore" onClick={() => setMobileMenuOpen(false)}>Explore stays</a>
           <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How HAMLET works</a>
-          <a href="#property-intake" onClick={() => setMobileMenuOpen(false)}>List a property</a>
-          <a href="#agent-workspace" onClick={() => setMobileMenuOpen(false)}>Partner workspace</a>
+          <a href="/partners/workspace" onClick={() => setMobileMenuOpen(false)}>Partner workspace</a>
         </nav>
         <div className="hm-header-actions">
-          <a className="hm-host-link" href="#property-intake">List your property</a>
-          <a className="hm-profile-button" href="#agent-workspace" aria-label="Open partner workspace">Join network ↗</a>
+          <a className="hm-profile-button" href="/partners/join" aria-label="Open partner workspace">Join network ↗</a>
         </div>
         <button className="hm-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>☰</button>
       </header>
@@ -336,20 +332,14 @@ export default function MarketplaceHome() {
         </section>
 
         <section className="hm-owner-cta" id="owners">
-          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="#property-intake">Submit a property <span>↗</span></a></div>
+          <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="/partners/workspace">Sign in to list a property <span>↗</span></a></div>
           <div className="hm-owner-visual"><div className="hm-owner-stat"><span>BUILT AROUND REAL PEOPLE</span><strong>Better stays.<br />Brighter returns.</strong><p>For guests, property owners and the agent network.</p></div></div>
         </section>
 
-        <PropertyIntake />
-
-        <section className="hm-workspace" id="agent-workspace">
-          <div className="hm-workspace-heading"><span className="hm-eyebrow">HAMLET PARTNER NETWORK</span><h2>One place to move the work forward.</h2><p>Owners, agents, property managers and authorised shortlet partners can create a HAMLET Partner account, submit properties and track reviews. Admin access is granted separately by HAMLET.</p></div>
-          <AgentPortal />
-        </section>
       </main>
 
       <BookingRequestModal stay={selectedStay} onClose={() => setSelectedStay(null)} />
-      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="#property-intake">List a property</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
+      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="/partners/join">Join the partner network</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
 }
