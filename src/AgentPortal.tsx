@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './AgentPortal.css'
 import PropertyIntakeQueue from './PropertyIntakeQueue'
+import BookingRequestQueue from './BookingRequestQueue'
 
 type AgentProfile = {
   role: 'agent' | 'owner' | 'admin'
@@ -507,6 +508,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
 
           <div className="agent-workspace-grid">
             {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
+            {(dashboard.profile?.role === 'admin' || dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent') && <BookingRequestQueue role={dashboard.profile.role} partnerActive={dashboard.profile.role !== 'agent' || dashboard.profile.agent_status === 'active'} />}
 
             {dashboard.profile?.role === 'admin' && <section className="agent-panel agent-wide-panel">
               <h3>Partner applications review</h3>
