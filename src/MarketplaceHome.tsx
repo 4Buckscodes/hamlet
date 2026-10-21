@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { calculateHamletPrice } from './hamletCore'
 import BookingRequestModal from './BookingRequestModal'
+import HowItWorks from './HowItWorks'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './MarketplaceHome.css'
 
@@ -111,17 +112,19 @@ const guestFacingNightlyPrice = (accommodationNightlyRate: number) => calculateH
 
 function AppLogo() {
   return (
-    <a className="hm-brand" href="#home" aria-label="HAMLET home">
+    <a className="hm-brand" href="/" aria-label="HAMLET home">
       <span className="hm-brand-mark">h</span>
       <span className="hm-brand-word">HAMLET</span>
     </a>
   )
 }
 
-export default function MarketplaceHome() {
+type HomePage = 'home' | 'explore' | 'how-it-works'
+
+export default function MarketplaceHome({ page = 'home' }: { page?: HomePage }) {
   const [city, setCity] = useState('Lagos')
   const [category, setCategory] = useState('All stays')
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [sort, setSort] = useState('recommended')
   const [saved, setSaved] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
@@ -208,9 +211,9 @@ export default function MarketplaceHome() {
       <header className="hm-header">
         <AppLogo />
         <nav className={mobileMenuOpen ? 'hm-nav hm-nav-open' : 'hm-nav'} aria-label="Main navigation">
-          <a href="#explore" onClick={() => setMobileMenuOpen(false)}>Explore stays</a>
-          <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How HAMLET works</a>
-          <a href="/partners/workspace" onClick={() => setMobileMenuOpen(false)}>Partner workspace</a>
+                   <a href="/explore" aria-current={page === 'explore' ? 'page' : undefined}>Explore stays</a>
+          <a href="/how-it-works" aria-current={page === 'how-it-works' ? 'page' : undefined}>How HAMLET works</a>
+          <a href="/partners/workspace">Partner workspace</a>
         </nav>
         <div className="hm-header-actions">
           <a className="hm-profile-button" href="/partners/join" aria-label="Open partner workspace">Join network ↗</a>
@@ -219,6 +222,9 @@ export default function MarketplaceHome() {
       </header>
 
       <main>
+        {page === 'how-it-works' && <HowItWorks />}
+
+        {page === 'home' && (
         <section className="hm-hero">
           <div className="hm-hero-copy">
             <span className="hm-eyebrow"><span /> BETTER STAYS. REAL ACCOUNTABILITY.</span>
@@ -232,9 +238,11 @@ export default function MarketplaceHome() {
             </div>
           </div>
         </section>
+        )}
 
-        <section className="hm-search-wrap" aria-label="Find a stay">
-          <form className="hm-search" onSubmit={(event) => { event.preventDefault(); document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' }) }}>
+        {page !== 'how-it-works' && (
+        <section className={page === 'explore' ? 'hm-search-wrap hm-search-standalone' : 'hm-search-wrap'} aria-label="Find a stay">
+          <form className="hm-search" onSubmit={(event) => { event.preventDefault(); if (page === 'home') window.location.assign(`/explore?q=${encodeURIComponent(query.trim())}`) }}>
             <label className="hm-search-field hm-destination">
               <span>Where</span>
               <select value={city} onChange={(event) => setCity(event.target.value)} aria-label="Choose city">
@@ -260,7 +268,9 @@ export default function MarketplaceHome() {
           </form>
           <div className="hm-search-footnote"><span>✦</span> Search the way you travel. Choose the stay that fits your plans.</div>
         </section>
+        )}
 
+        {page === 'explore' && (
         <section className="hm-explore section-anchor" id="explore">
           <div className="hm-section-heading">
             <div>
@@ -321,25 +331,30 @@ export default function MarketplaceHome() {
             <div className="hm-empty-state"><span>⌕</span><h3>No preview stays match that search.</h3><p>Try another neighbourhood or clear your filters.</p><button type="button" onClick={() => { setCity('Lagos'); setCategory('All stays'); setQuery('') }}>Show all stays</button></div>
           )}
         </section>
+        )}
 
+        {page === 'home' && (
         <section className="hm-trust-band" id="how-it-works">
-          <div className="hm-trust-intro"><span className="hm-eyebrow">WHY HAMLET</span><h2>Booking a stay should feel simple.<br /><em>Trust should come standard.</em></h2></div>
+          <div className="hm-trust-intro"><span className="hm-eyebrow">WHY HAMLET</span><h2>Booking a stay should feel simple.<br /><em>Trust should come standard.</em></h2><a className="hm-text-link" href="/how-it-works">See how HAMLET works →</a></div>
           <div className="hm-trust-points">
             <article><span className="hm-trust-icon">⌕</span><h3>Know what you're booking</h3><p>Clear property details and expectations, before you commit.</p></article>
             <article><span className="hm-trust-icon">✓</span><h3>Checks with meaning</h3><p>Verification should reflect checks actually completed — never just a badge.</p></article>
             <article><span className="hm-trust-icon">↗</span><h3>People stay accountable</h3><p>A better-connected network of owners and agents, with clearer responsibilities.</p></article>
           </div>
         </section>
+        )}
 
+        {page !== 'explore' && (
         <section className="hm-owner-cta" id="owners">
           <div className="hm-owner-copy"><span className="hm-eyebrow">FOR OWNERS, MANAGERS & AGENTS</span><h2>Your network is valuable.<br /><em>Let it work better.</em></h2><p>HAMLET is building a more accountable way to bring good properties and the right guests together — with a clear role for the people who make the connection.</p><a className="hm-primary-button" href="/partners/workspace">Sign in to list a property <span>↗</span></a></div>
           <div className="hm-owner-visual"><div className="hm-owner-stat"><span>BUILT AROUND REAL PEOPLE</span><strong>Better stays.<br />Brighter returns.</strong><p>For guests, property owners and the agent network.</p></div></div>
         </section>
+        )}
 
       </main>
 
       <BookingRequestModal stay={selectedStay} onClose={() => setSelectedStay(null)} />
-      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="#explore">Explore stays</a><a href="#how-it-works">Our promise</a><a href="/partners/join">Join the partner network</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
+      <footer className="hm-footer"><AppLogo /><span>Better stays. Brighter returns.</span><div><a href="/explore">Explore stays</a><a href="/how-it-works">How HAMLET works</a><a href="/partners/join">Join the partner network</a></div><small>© 2026 HAMLET · Made for the way Nigeria stays.</small></footer>
     </div>
   )
 }
