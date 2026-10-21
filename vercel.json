@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ],
   "headers": [
@@ -20,5 +20,6 @@
         }
       ]
     }
-  ]
+  ],
+  "trailingSlash": false
 }
