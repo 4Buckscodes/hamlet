@@ -182,3 +182,10 @@
   .hm-booking-record-grid, .hm-payment-verification { grid-template-columns: 1fr; }
   .hm-payment-verification small { grid-column: auto; }
 }
+
+
+/* Full property intake belongs to the authenticated workspace. */
+.hm-full-property-form { grid-column: 1 / -1; }
+.hm-full-property-form .agent-property-checkup { margin-top: 8px; }
+.hm-locked-intake-copy { max-width: 680px; line-height: 1.7; color: #c3c5bf; }
+.hm-page-main > p > a.hm-primary-button { display: inline-flex; margin-top: 8px; }
