@@ -1,6 +1,5 @@
 import MarketplaceHome from './MarketplaceHome'
 import AgentPortal from './AgentPortal'
-import PropertyIntake from './PropertyIntake'
 import './App.css'
 
 function PageShell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
@@ -9,7 +8,7 @@ function PageShell({ title, description, children }: { title: string; descriptio
       <header className="hm-page-header">
         <a className="hm-page-brand" href="/">HAMLET</a>
         <nav aria-label="Page navigation">
-          <a href="/">Explore stays</a><a href="/list-property">List a property</a>
+          <a href="/">Explore stays</a>
           <a href="/partners/join">Join as a partner</a><a href="/partners/workspace">Partner workspace</a>
         </nav>
       </header>
@@ -26,6 +25,5 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, '') || '/'
   if (path === '/partners/join') return <PageShell title="Join the partner network" description="Create your partner account. HAMLET reviews new applications before access is approved."><AgentPortal view="join" /></PageShell>
   if (path === '/partners/workspace') return <PageShell title="Partner workspace" description="Sign in to manage your authorised listings, assignments, reviews and partner activity."><AgentPortal view="workspace" /></PageShell>
-  if (path === '/list-property') return <PageShell title="List a property" description="Share a shortlet with HAMLET for onboarding and review. Submit only properties you own or are authorised to represent."><PropertyIntake /></PageShell>
   return <MarketplaceHome />
 }

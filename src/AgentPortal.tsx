@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './AgentPortal.css'
 import PropertyIntakeQueue from './PropertyIntakeQueue'
+import BookingRequestQueue from './BookingRequestQueue'
 
 type AgentProfile = {
   role: 'agent' | 'owner' | 'admin'
@@ -117,7 +118,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
   })
   const [propertyForm, setPropertyForm] = useState({
     title: '', city: 'Lagos', area: '', propertyType: 'Apartment', bedrooms: '1', bathrooms: '1',
-    maxGuests: '2', nightlyRate: '', listingUrl: '', photosUrl: '', amenities: [] as string[],
+    maxGuests: '2', nightlyRate: '', listingUrl: '', photosUrl: '', availability: 'Confirm with me', availableFrom: '', amenities: [] as string[],
     hasApprovedBuildingPlan: false, hasCofo: false, hasGovernorsConsent: false, hasOtherDocuments: false,
     confirmsAuthorityToSubmit: false,
   })
@@ -257,6 +258,8 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
         nightly_rate: Number(propertyForm.nightlyRate),
         listing_url: propertyForm.listingUrl,
         photos_url: propertyForm.photosUrl,
+        availability: propertyForm.availability,
+        available_from: propertyForm.availableFrom || null,
         amenities: propertyForm.amenities,
         has_approved_building_plan: propertyForm.hasApprovedBuildingPlan,
         has_cofo: propertyForm.hasCofo,
@@ -272,7 +275,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       setMessage('Property submitted for review.')
       setPropertyForm({
         title: '', city: 'Lagos', area: '', propertyType: 'Apartment', bedrooms: '1', bathrooms: '1',
-        maxGuests: '2', nightlyRate: '', listingUrl: '', photosUrl: '', amenities: [],
+        maxGuests: '2', nightlyRate: '', listingUrl: '', photosUrl: '', availability: 'Confirm with me', availableFrom: '', amenities: [],
         hasApprovedBuildingPlan: false, hasCofo: false, hasGovernorsConsent: false, hasOtherDocuments: false,
         confirmsAuthorityToSubmit: false,
       })
@@ -507,6 +510,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
 
           <div className="agent-workspace-grid">
             {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
+            {(dashboard.profile?.role === 'admin' || dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent') && <BookingRequestQueue role={dashboard.profile.role} partnerActive={dashboard.profile.role !== 'agent' || dashboard.profile.agent_status === 'active'} />}
 
             {dashboard.profile?.role === 'admin' && <section className="agent-panel agent-wide-panel">
               <h3>Partner applications review</h3>
@@ -514,44 +518,48 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
               {dashboard.applications.length === 0 ? <p className="agent-empty">No pending applications.</p> : <div className="agent-record-list">{dashboard.applications.map((application) => <article className="agent-record agent-record-title" key={application.id}><div><strong>{application.display_name}</strong><span>{application.city} · {application.experience}</span></div><div className="agent-session-actions"><button className="agent-primary" type="button" onClick={() => void reviewApplication(application.id, 'active')}>Approve</button><button className="agent-secondary" type="button" onClick={() => void reviewApplication(application.id, 'rejected')}>Reject</button></div></article>)}</div>}
             </section>}
 
-            {view !== 'workspace' && dashboard.profile?.role === 'agent' && <form className="agent-panel" onSubmit={handlePropertySubmit}>
+            {(dashboard.profile?.role === 'owner' || (dashboard.profile?.role === 'agent' && dashboard.profile.agent_status === 'active')) && <form className="agent-panel agent-wide-panel hm-full-property-form" onSubmit={handlePropertySubmit}>
               <h3>Submit a property</h3>
-              <p>New listings enter review. Only the submitter and authorised assignees can access them.</p>
-              <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
+              <p>Complete the full property intake here. Submissions stay private to authorised reviewers until HAMLET completes its checks and approves publication.</p>
+              <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>City</span><select disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.city} onChange={(event) => setPropertyForm({ ...propertyForm, city: event.target.value })}><option>Lagos</option><option>Abuja</option><option>Ibadan</option></select></label>
-                <label className="agent-field"><span>Area</span><input required disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.area} onChange={(event) => setPropertyForm({ ...propertyForm, area: event.target.value })} /></label>
+                <label className="agent-field"><span>City</span><select disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.city} onChange={(event) => setPropertyForm({ ...propertyForm, city: event.target.value })}><option>Lagos</option><option>Abuja</option><option>Ibadan</option></select></label>
+                <label className="agent-field"><span>Area</span><input required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.area} onChange={(event) => setPropertyForm({ ...propertyForm, area: event.target.value })} /></label>
               </div>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>Property type</span><select disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.propertyType} onChange={(event) => setPropertyForm({ ...propertyForm, propertyType: event.target.value })}><option>Apartment</option><option>Duplex</option><option>Villa</option><option>Townhouse</option></select></label>
-                <label className="agent-field"><span>Bedrooms</span><input required min="1" type="number" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.bedrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bedrooms: event.target.value })} /></label>
+                <label className="agent-field"><span>Property type</span><select disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.propertyType} onChange={(event) => setPropertyForm({ ...propertyForm, propertyType: event.target.value })}><option>Apartment</option><option>Duplex</option><option>Villa</option><option>Townhouse</option></select></label>
+                <label className="agent-field"><span>Bedrooms</span><input required min="1" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.bedrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bedrooms: event.target.value })} /></label>
               </div>
-              <label className="agent-field"><span>Indicative nightly rate (NGN)</span><input required min="0" type="number" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.nightlyRate} onChange={(event) => setPropertyForm({ ...propertyForm, nightlyRate: event.target.value })} /></label>
+              <label className="agent-field"><span>Indicative nightly rate (NGN)</span><input required min="0" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.nightlyRate} onChange={(event) => setPropertyForm({ ...propertyForm, nightlyRate: event.target.value })} /></label>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>Bathrooms</span><input required min="1" max="30" type="number" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.bathrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bathrooms: event.target.value })} /></label>
-                <label className="agent-field"><span>Maximum guests</span><input required min="1" max="100" type="number" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.maxGuests} onChange={(event) => setPropertyForm({ ...propertyForm, maxGuests: event.target.value })} /></label>
+                <label className="agent-field"><span>Bathrooms</span><input required min="1" max="30" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.bathrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bathrooms: event.target.value })} /></label>
+                <label className="agent-field"><span>Maximum guests</span><input required min="1" max="100" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.maxGuests} onChange={(event) => setPropertyForm({ ...propertyForm, maxGuests: event.target.value })} /></label>
               </div>
-              <label className="agent-field"><span>Existing listing URL (optional)</span><input type="url" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.listingUrl} onChange={(event) => setPropertyForm({ ...propertyForm, listingUrl: event.target.value })} placeholder="Existing listing link" /></label>
-              <label className="agent-field"><span>Photos / walkthrough URL</span><input required type="url" disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.photosUrl} onChange={(event) => setPropertyForm({ ...propertyForm, photosUrl: event.target.value })} placeholder="Link to photos or walkthrough video" /></label>
+              <label className="agent-field"><span>Existing listing URL (optional)</span><input type="url" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.listingUrl} onChange={(event) => setPropertyForm({ ...propertyForm, listingUrl: event.target.value })} placeholder="Existing listing link" /></label>
+              <label className="agent-field"><span>Photos / walkthrough URL</span><input required type="url" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.photosUrl} onChange={(event) => setPropertyForm({ ...propertyForm, photosUrl: event.target.value })} placeholder="Link to photos or walkthrough video" /></label>
+              <div className="agent-fields-row">
+                <label className="agent-field"><span>Availability</span><select value={propertyForm.availability} onChange={(event) => setPropertyForm({ ...propertyForm, availability: event.target.value })}><option>Confirm with me</option><option>Available now</option><option>Available from a date</option></select></label>
+                <label className="agent-field"><span>Available from (if known)</span><input type="date" value={propertyForm.availableFrom} onChange={(event) => setPropertyForm({ ...propertyForm, availableFrom: event.target.value })} /></label>
+              </div>
               <div className="agent-property-checkup">
                 <h4>Property checkup · amenities</h4>
                 <p>Only select facilities the property actually provides.</p>
                 <div className="agent-checklist-grid">
                   {['Air conditioning', 'Reliable power', 'Generator / inverter', 'Wi-Fi', 'Swimming pool', 'Parking', 'Kitchen', 'Washing machine', 'Security', 'Workspace', 'Balcony', 'Family-friendly'].map((amenity) => (
-                    <label key={amenity}><input type="checkbox" disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.amenities.includes(amenity)} onChange={(event) => setPropertyForm({ ...propertyForm, amenities: event.target.checked ? [...propertyForm.amenities, amenity] : propertyForm.amenities.filter((item) => item !== amenity) })} /><span>{amenity}</span></label>
+                    <label key={amenity}><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.amenities.includes(amenity)} onChange={(event) => setPropertyForm({ ...propertyForm, amenities: event.target.checked ? [...propertyForm.amenities, amenity] : propertyForm.amenities.filter((item) => item !== amenity) })} /><span>{amenity}</span></label>
                   ))}
                 </div>
                 <h4>Documentation checklist</h4>
                 <p>This is a self-report, not proof of verification. HAMLET reviews evidence before approving a listing.</p>
                 <div className="agent-checklist-grid">
-                  <label><input type="checkbox" disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.hasApprovedBuildingPlan} onChange={(event) => setPropertyForm({ ...propertyForm, hasApprovedBuildingPlan: event.target.checked })} /><span>Approved building plan available</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.hasCofo} onChange={(event) => setPropertyForm({ ...propertyForm, hasCofo: event.target.checked })} /><span>Certificate of Occupancy (C of O)</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.hasGovernorsConsent} onChange={(event) => setPropertyForm({ ...propertyForm, hasGovernorsConsent: event.target.checked })} /><span>Governor's consent</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.hasOtherDocuments} onChange={(event) => setPropertyForm({ ...propertyForm, hasOtherDocuments: event.target.checked })} /><span>Other property documents</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasApprovedBuildingPlan} onChange={(event) => setPropertyForm({ ...propertyForm, hasApprovedBuildingPlan: event.target.checked })} /><span>Approved building plan available</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasCofo} onChange={(event) => setPropertyForm({ ...propertyForm, hasCofo: event.target.checked })} /><span>Certificate of Occupancy (C of O)</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasGovernorsConsent} onChange={(event) => setPropertyForm({ ...propertyForm, hasGovernorsConsent: event.target.checked })} /><span>Governor's consent</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasOtherDocuments} onChange={(event) => setPropertyForm({ ...propertyForm, hasOtherDocuments: event.target.checked })} /><span>Other property documents</span></label>
                 </div>
-                <label className="agent-authority-check"><input type="checkbox" required disabled={dashboard.profile?.agent_status !== 'active'} checked={propertyForm.confirmsAuthorityToSubmit} onChange={(event) => setPropertyForm({ ...propertyForm, confirmsAuthorityToSubmit: event.target.checked })} /><span>I own this property or have the owner's permission to submit it to HAMLET.</span></label>
+                <label className="agent-authority-check"><input type="checkbox" required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.confirmsAuthorityToSubmit} onChange={(event) => setPropertyForm({ ...propertyForm, confirmsAuthorityToSubmit: event.target.checked })} /><span>I own this property or have the owner's permission to submit it to HAMLET.</span></label>
               </div>
-              <button className="agent-primary" type="submit" disabled={busy || dashboard.profile?.agent_status !== 'active'}>Submit for review</button>
+              <button className="agent-primary" type="submit" disabled={busy || (dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active')}>Submit for review</button>
             </form>}
 
             <section className="agent-panel">

@@ -161,3 +161,24 @@
 @media (max-width: 540px) {
   .agent-checklist-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Booking request operations queue */
+.hm-booking-queue { grid-column: 1 / -1; }
+.hm-booking-record { display: grid; gap: 14px; }
+.hm-booking-record-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.hm-booking-record-grid p { margin: 0; min-width: 0; color: #c3c5bf; font-size: .84rem; line-height: 1.6; overflow-wrap: anywhere; }
+.hm-booking-record-grid strong { color: #f1eadc; }
+.hm-booking-record-grid a { color: #e4c982; text-decoration: underline; }
+.hm-booking-record-grid code { overflow-wrap: anywhere; font-size: .76rem; }
+.hm-booking-guest-message { margin: 0; padding: 12px; border-radius: 8px; background: rgba(8, 15, 20, .38); color: #c3c5bf; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hm-booking-guest-message strong { color: #f1eadc; }
+.hm-booking-actions { align-items: end; flex-wrap: wrap; }
+.hm-payment-verification { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; padding: 14px; border: 1px solid rgba(231, 220, 197, .14); border-radius: 9px; background: rgba(8, 15, 20, .34); }
+.hm-payment-verification .agent-field { min-width: 0; }
+.hm-payment-verification .agent-primary { align-self: end; min-height: 42px; }
+.hm-payment-verification small { grid-column: 1 / -1; color: #b8b8b0; font-size: .76rem; line-height: 1.5; }
+@media (max-width: 640px) {
+  .hm-booking-record-grid, .hm-payment-verification { grid-template-columns: 1fr; }
+  .hm-payment-verification small { grid-column: auto; }
+}
