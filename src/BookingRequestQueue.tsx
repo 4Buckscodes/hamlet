@@ -40,7 +40,21 @@ type BookingRequestQueueProps = {
 
 const money = (amount: number) => `₦${Number(amount).toLocaleString('en-NG')}`
 const dates = (start: string, end: string) => `${start} → ${end}`
+const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
 
+type BookingRequestsResult = { items: BookingRequest[] | null; error: string }
+
+async function fetchBookingRequests(): Promise<BookingRequestsResult> {
+  if (!supabase) return { items: [], error: '' }
+  const { data, error } = await supabase
+    .from('guest_booking_requests')
+    .select('id, guest_reference, property_id, guest_name, guest_email, guest_phone, check_in, check_out, guest_count, guest_message, accommodation_subtotal, hamlet_service_fee, mandatory_charges, guest_total, status, payment_status, payment_deadline, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) return { items: null, error: `Unable to load booking requests: ${error.message}` }
+  return { items: (data ?? []) as BookingRequest[], error: '' }
+}
 export default function BookingRequestQueue({ role, partnerActive }: BookingRequestQueueProps) {
   const [items, setItems] = useState<BookingRequest[]>([])
   const [loading, setLoading] = useState(Boolean(isSupabaseConfigured && supabase))
@@ -51,36 +65,39 @@ export default function BookingRequestQueue({ role, partnerActive }: BookingRequ
   const [providerReference, setProviderReference] = useState('')
   const [verificationAmount, setVerificationAmount] = useState<Record<string, string>>({})
 
-  const refresh = useCallback(async () => {
-    if (!supabase || !isSupabaseConfigured) {
-      setLoading(false)
-      return
-    }
-    const { data, error: queryError } = await supabase
-      .from('guest_booking_requests')
-      .select('id, guest_reference, property_id, guest_name, guest_email, guest_phone, check_in, check_out, guest_count, guest_message, accommodation_subtotal, hamlet_service_fee, mandatory_charges, guest_total, status, payment_status, payment_deadline, created_at')
-      .order('created_at', { ascending: false })
-      .limit(100)
-
-    if (queryError) {
-      setError(`Unable to load booking requests: ${queryError.message}`)
-    } else {
-      setItems((data ?? []) as BookingRequest[])
+    const applyResult = useCallback((result: BookingRequestsResult) => {
+    if (result.items) {
+      setItems(result.items)
       setError('')
+    } else {
+      setError(result.error)
     }
     setLoading(false)
   }, [])
 
+  const refresh = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
+    }
+    applyResult(await fetchBookingRequests())
+  }, [applyResult])
+
   useEffect(() => {
-    void refresh()
-  }, [refresh])
+    if (!isSupabaseConfigured) return
+    let cancelled = false
+    void fetchBookingRequests().then((result) => {
+      if (!cancelled) applyResult(result)
+    })
+    return () => { cancelled = true }
+  }, [applyResult])
 
   const changeStatus = async (item: BookingRequest, status: 'availability_confirmed' | 'awaiting_payment' | 'cancelled' | 'disputed') => {
     if (!supabase) return
     setBusyId(item.id)
     setError('')
     setMessage('')
-    const paymentDeadline = status === 'awaiting_payment' ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null
+    const paymentDeadline = status === 'awaiting_payment' ? hoursFromNow(24) : null
     const { error: actionError } = await supabase.rpc('set_guest_booking_status', {
       p_booking_id: item.id,
       p_status: status,
