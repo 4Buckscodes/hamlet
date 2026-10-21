@@ -1213,3 +1213,20 @@ button {
     min-height: 260px;
   }
 }
+
+
+/* Multi-page partner and property flows */
+.hm-page-shell { min-height:100vh; background:#faf9f6; color:#242820; }
+.hm-page-header { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:16px clamp(20px,5vw,72px); border-bottom:1px solid #e8e6df; background:#fff; }
+.hm-page-brand { color:#28392f; font-size:1.2rem; font-weight:800; letter-spacing:.16em; text-decoration:none; }
+.hm-page-header nav { display:flex; flex-wrap:wrap; gap:20px; }
+.hm-page-header nav a,.hm-page-footer a { color:#35483a; text-decoration:none; font-size:.92rem; font-weight:600; }
+.hm-page-header nav a:hover,.hm-page-footer a:hover { text-decoration:underline; }
+.hm-page-main { width:min(1120px,calc(100% - 40px)); margin:0 auto; padding:48px 0 72px; }
+.hm-page-intro { max-width:720px; margin:0 auto 32px; text-align:center; }
+.hm-page-eyebrow { color:#8a7654; font-size:.72rem; font-weight:800; letter-spacing:.16em; }
+.hm-page-intro h1 { margin:10px 0 12px; color:#27392e; font-size:clamp(2rem,5vw,3.5rem); line-height:1.05; }
+.hm-page-intro > p:last-child { color:#64685f; line-height:1.7; }
+.hm-page-main .agent-portal { max-width:100%; }
+.hm-page-footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; padding:24px clamp(20px,5vw,72px); border-top:1px solid #e8e6df; color:#74776f; background:#fff; font-size:.88rem; }
+@media(max-width:720px){.hm-page-header{align-items:flex-start;flex-direction:column}.hm-page-header nav{gap:12px 16px}.hm-page-main{width:calc(100% - 28px);padding:32px 0 48px}}

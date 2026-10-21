@@ -97,14 +97,16 @@ const developmentSnapshot = {
   notification: 'DEVELOPMENT SAMPLE · Owner requested an updated property walkthrough.',
 }
 
-export default function AgentPortal() {
+type AgentPortalView = 'join' | 'workspace'
+
+export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView }) {
   const [session, setSession] = useState<Session | null>(null)
   const [dashboard, setDashboard] = useState<Dashboard>(emptyDashboard)
   const [loading, setLoading] = useState(Boolean(isSupabaseConfigured))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const [mode, setMode] = useState<'sign_in' | 'register'>('register')
+  const [mode, setMode] = useState<'sign_in' | 'register'>(view === 'workspace' ? 'sign_in' : 'register')
   const [authForm, setAuthForm] = useState({
     email: '',
     password: '',
@@ -477,10 +479,7 @@ export default function AgentPortal() {
             <p>Partner accounts are reviewed by HAMLET. Assignments and commercial offers appear only after the account is approved and a property is authorised for you.</p>
           </aside>
           <form className="agent-panel agent-auth-form" onSubmit={handleAuth}>
-            <div className="agent-mode-switch" role="group" aria-label="Partner account action">
-              <button type="button" className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')}>Register</button>
-              <button type="button" className={mode === 'sign_in' ? 'selected' : ''} onClick={() => setMode('sign_in')}>Sign in</button>
-            </div>
+            {view === 'join' ? <div className="agent-mode-switch" role="group" aria-label="Partner account action"><button type="button" className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')}>Register</button><a className="agent-secondary" href="/partners/workspace">Already a partner? Sign in</a></div> : null}
             <h3>{mode === 'register' ? 'Join the HAMLET Partner Network' : 'Sign in to your workspace'}</h3>
             {mode === 'register' && <p className="agent-muted">Create your own account to submit shortlets and track reviews. New partner accounts are pending until HAMLET approves them. Admin access is granted separately by HAMLET and cannot be self-selected.</p>}
             {mode === 'register' && <>
@@ -515,7 +514,7 @@ export default function AgentPortal() {
               {dashboard.applications.length === 0 ? <p className="agent-empty">No pending applications.</p> : <div className="agent-record-list">{dashboard.applications.map((application) => <article className="agent-record agent-record-title" key={application.id}><div><strong>{application.display_name}</strong><span>{application.city} · {application.experience}</span></div><div className="agent-session-actions"><button className="agent-primary" type="button" onClick={() => void reviewApplication(application.id, 'active')}>Approve</button><button className="agent-secondary" type="button" onClick={() => void reviewApplication(application.id, 'rejected')}>Reject</button></div></article>)}</div>}
             </section>}
 
-            {dashboard.profile?.role === 'agent' && <form className="agent-panel" onSubmit={handlePropertySubmit}>
+            {view !== 'workspace' && dashboard.profile?.role === 'agent' && <form className="agent-panel" onSubmit={handlePropertySubmit}>
               <h3>Submit a property</h3>
               <p>New listings enter review. Only the submitter and authorised assignees can access them.</p>
               <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.agent_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
