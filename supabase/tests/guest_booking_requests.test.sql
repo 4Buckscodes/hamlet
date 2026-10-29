@@ -35,7 +35,7 @@ select lives_ok(
   $$select * from public.submit_guest_booking_request(
     'b1000000-0000-4000-8000-000000000001',
     'TEST Guest One', 'guest-one@example.test', '+234800000032',
-    '2026-11-01', '2026-11-03', 2, 'Arrival after 4pm'
+    '2026-11-01', '2026-11-03', 2::smallint, 'Arrival after 4pm'
   )$$,
   'guest can request an approved Lagos property'
 );
@@ -44,7 +44,7 @@ select throws_ok(
   $$select * from public.submit_guest_booking_request(
     'b1000000-0000-4000-8000-000000000002',
     'TEST Guest Two', 'guest-two@example.test', '+234800000033',
-    '2026-11-01', '2026-11-03', 1, ''
+    '2026-11-01', '2026-11-03', 1::smallint, ''
   )$$,
   'P0001', 'This property is not available for booking requests',
   'guest cannot request an unapproved property'
@@ -110,7 +110,7 @@ select lives_ok(
   $$select * from public.submit_guest_booking_request(
     'b1000000-0000-4000-8000-000000000001',
     'TEST Guest Three', 'guest-three@example.test', '+234800000034',
-    '2026-11-02', '2026-11-04', 2, 'Overlapping request'
+    '2026-11-02', '2026-11-04', 2::smallint, 'Overlapping request'
   )$$,
   'another guest may request dates while availability is being checked'
 );
