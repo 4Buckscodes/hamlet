@@ -9,11 +9,11 @@ insert into auth.users (
   ('e0000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'owner-test@example.test', '', now(), '{"provider":"email","providers":["email"]}', '{"display_name":"TEST Owner","phone":"+234000000002","city":"Lagos","experience":"test owner"}', now(), now()),
   ('e0000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'other-agent-test@example.test', '', now(), '{"provider":"email","providers":["email"]}', '{"display_name":"TEST Other Agent","phone":"+234000000003","city":"Lagos","experience":"test agent"}', now(), now()),
   ('e0000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'admin-test@example.test', '', now(), '{"provider":"email","providers":["email"]}', '{"display_name":"TEST Admin","phone":"+234000000004","city":"Lagos","experience":"test admin"}', now(), now()),
-  ('e0000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'pending-agent-test@example.test', '', now(), '{"provider":"email","providers":["email"]}', '{"display_name":"TEST Pending Agent","phone":"+234000000005","city":"Lagos","experience":"test agent"}', now(), now())
+  ('e0000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'new-agent-test@example.test', '', now(), '{"provider":"email","providers":["email"]}', '{"display_name":"TEST New Agent","phone":"+234000000005","city":"Lagos","experience":"test agent"}', now(), now())
 on conflict (id) do nothing;
 
 update public.profiles set role = 'agent', agent_status = 'active' where id in ('e0000000-0000-4000-8000-000000000001', 'e0000000-0000-4000-8000-000000000003');
-update public.profiles set role = 'agent', agent_status = 'pending' where id = 'e0000000-0000-4000-8000-000000000005';
+update public.profiles set role = 'agent', agent_status = 'active', account_status = 'active' where id = 'e0000000-0000-4000-8000-000000000005';
 update public.profiles set role = 'owner' where id = 'e0000000-0000-4000-8000-000000000002';
 update public.profiles set role = 'admin' where id = 'e0000000-0000-4000-8000-000000000004';
 
@@ -64,9 +64,9 @@ select throws_ok(
 );
 
 select set_config('request.jwt.claim.sub', 'e0000000-0000-4000-8000-000000000002', true);
-select throws_ok(
+select lives_ok(
   $$select public.assign_property_agent('e1000000-0000-4000-8000-000000000002', 'e0000000-0000-4000-8000-000000000005')$$,
-  'P0001', 'Agent is not active', 'owner cannot assign a pending agent'
+  'owner can assign a newly registered active partner'
 );
 select lives_ok(
   $$select public.request_listing_correction('e1000000-0000-4000-8000-000000000002', 'Please provide a current walkthrough link.')$$,
@@ -91,10 +91,10 @@ select is((select count(*)::integer from public.agent_offer_versions v join publ
 
 select set_config('request.jwt.claim.sub', 'e0000000-0000-4000-8000-000000000004', true);
 select lives_ok(
-  $$select public.review_agent_application('e0000000-0000-4000-8000-000000000005', 'active')$$,
-  'admin can approve a pending agent application'
+  $$select public.set_partner_account_status('e0000000-0000-4000-8000-000000000005', 'suspended', 'Policy review')$$,
+  'admin can suspend an active partner account'
 );
-select is((select agent_status::text from public.profiles where id = 'e0000000-0000-4000-8000-000000000005'), 'active', 'approved agent status is stored');
+select is((select account_status from public.profiles where id = 'e0000000-0000-4000-8000-000000000005'), 'suspended', 'suspended account status is persisted');
 select lives_ok(
   $$select public.review_agent_listing('e1000000-0000-4000-8000-000000000001', 'approved')$$,
   'admin can approve a corrected listing after resubmission'

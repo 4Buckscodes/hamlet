@@ -9,7 +9,8 @@ import BookingRequestQueue from './BookingRequestQueue'
 type AgentProfile = {
   role: 'agent' | 'owner' | 'admin'
   display_name: string
-  agent_status: 'pending' | 'active' | 'rejected'
+  account_status: 'active' | 'suspended' | 'deactivated'
+  account_status_reason: string | null
   city: string
 }
 
@@ -60,7 +61,6 @@ type Earning = {
 }
 
 type AgentDirectoryEntry = { agent_id: string; display_name: string; city: string }
-type ReviewApplication = { id: string; display_name: string; city: string; experience: string; agent_status: 'pending' | 'active' | 'rejected' }
 type AgentNotification = {
   id: string
   event_type: string
@@ -76,7 +76,7 @@ type Dashboard = {
   earnings: Earning[]
   notifications: AgentNotification[]
   agents: AgentDirectoryEntry[]
-  applications: ReviewApplication[]
+  partnerAccounts: Array<{ id: string; display_name: string; city: string; role: 'agent' | 'owner'; account_status: 'active' | 'suspended' | 'deactivated'; account_status_reason: string | null }>
 }
 
 const emptyDashboard: Dashboard = {
@@ -86,7 +86,7 @@ const emptyDashboard: Dashboard = {
   earnings: [],
   notifications: [],
   agents: [],
-  applications: [],
+  partnerAccounts: [],
 }
 
 const formatNaira = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
@@ -129,7 +129,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
     if (!supabase) return
 
     const [profileResult, listingsResult, offersResult, earningsResult, notificationsResult] = await Promise.all([
-      supabase.from('profiles').select('role, display_name, agent_status, city, experience').eq('id', userId).single(),
+      supabase.from('profiles').select('role, display_name, account_status, account_status_reason, city, experience').eq('id', userId).single(),
       supabase.from('properties').select('id, submitted_by, owner_id, title, city, area, property_type, bedrooms, bathrooms, max_guests, listing_url, photos_url, amenities, has_approved_building_plan, has_cofo, has_governors_consent, has_other_documents, confirms_authority_to_submit, listing_status, correction_request, nightly_rate').order('updated_at', { ascending: false }),
       supabase.from('agent_offers').select('id, property_id, offer_kind, status, current_version_id, property:properties(title, city)').order('created_at', { ascending: false }),
       supabase.from('agent_earnings_view').select('*').order('check_in', { ascending: false }),
@@ -157,13 +157,18 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       earnings: (earningsResult.data ?? []) as Earning[],
       notifications: (notificationsResult.data ?? []) as AgentNotification[],
       agents: [],
-      applications: [],
+      partnerAccounts: [],
     })
+
     if (profileResult.data?.role === 'admin') {
-      const { data: applicationData, error: applicationError } = await supabase.from('profiles').select('id, display_name, city, experience, agent_status').eq('role', 'agent').eq('agent_status', 'pending')
-      if (applicationError) throw applicationError
-      setDashboard((current) => ({ ...current, applications: (applicationData ?? []) as ReviewApplication[] }))
+      const { data: partnerAccounts, error: partnersError } = await supabase.from('profiles')
+        .select('id, display_name, city, role, account_status, account_status_reason')
+        .in('role', ['agent', 'owner'])
+        .order('created_at', { ascending: false })
+      if (partnersError) throw partnersError
+      setDashboard((current) => ({ ...current, partnerAccounts: (partnerAccounts ?? []) as Dashboard['partnerAccounts'] }))
     }
+
   }, [])
 
   useEffect(() => {
@@ -226,7 +231,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
         })
         if (signupError) throw signupError
         if (data.session?.user.id) await loadDashboard(data.session.user.id)
-        else setMessage('Registration received. Verify your email, then sign in to continue onboarding.')
+        else setMessage('Your account has been created. Check your email to verify it, then sign in to access your partner workspace.')
       } else {
         const { data, error: signinError } = await supabase.auth.signInWithPassword({ email: authForm.email, password: authForm.password })
         if (signinError) throw signinError
@@ -375,11 +380,23 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
     else { setMessage(`Listing ${status}.`); await refresh() }
   }
 
-  const reviewApplication = async (agentId: string, status: 'active' | 'rejected') => {
+  const setPartnerStatus = async (partnerId: string, status: 'active' | 'suspended' | 'deactivated') => {
     if (!supabase) return
-    const { error: reviewError } = await supabase.rpc('review_agent_application', { p_agent_id: agentId, p_status: status })
-    if (reviewError) setError(reviewError.message)
-    else { setMessage(`Partner application ${status}.`); await refresh() }
+    const reason = status === 'active' ? null : window.prompt(`Reason for ${status} (minimum 5 characters):`)
+    if (status !== 'active' && (!reason || reason.trim().length < 5)) return
+    const { error: statusError } = await supabase.rpc('set_partner_account_status', { p_partner_id: partnerId, p_status: status, p_reason: reason })
+    if (statusError) setError(statusError.message)
+    else { setMessage(`Partner account ${status}.`); await refresh() }
+  }
+
+  const loadPartnerAccounts = async () => {
+    if (!supabase || dashboard.profile?.role !== 'admin') return
+    const { data, error: partnersError } = await supabase.from('profiles')
+      .select('id, display_name, city, role, account_status, account_status_reason')
+      .in('role', ['agent', 'owner'])
+      .order('created_at', { ascending: false })
+    if (partnersError) setError(partnersError.message)
+    else setDashboard((current) => ({ ...current, partnerAccounts: data ?? [] }))
   }
 
   const loadAgentsForProperty = async (propertyId: string) => {
@@ -442,7 +459,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
           <div className="agent-workspace-grid">
             <article className="agent-panel">
               <h3>Partner registration and onboarding</h3>
-              <p>Connect a Supabase project to register a partner, capture service area and experience, and submit the application for review.</p>
+              <p>Connect Supabase to register a partner, enter the workspace immediately, and submit properties for review.</p>
               <label className="agent-field"><span>Email</span><input disabled placeholder="partner@example.com" /></label>
               <button className="agent-primary" type="button" disabled>Supabase not configured</button>
             </article>
@@ -477,14 +494,14 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       ) : !session ? (
         <div className="agent-auth-layout">
           <aside className="agent-auth-intro">
-            <span className="agent-status development">Partner applications reviewed by HAMLET</span>
+            <span className="agent-status development">Open partner registration</span>
             <h3>Build a trusted local property network.</h3>
-            <p>Partner accounts are reviewed by HAMLET. Assignments and commercial offers appear only after the account is approved and a property is authorised for you.</p>
+            <p>Create an account and enter your workspace immediately. Submit properties straight away; HAMLET reviews every listing before it appears to guests. Owner permission is required when you list on someone else’s behalf.</p>
           </aside>
           <form className="agent-panel agent-auth-form" onSubmit={handleAuth}>
             {view === 'join' ? <div className="agent-mode-switch" role="group" aria-label="Partner account action"><button type="button" className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')}>Register</button><a className="agent-secondary" href="/partners/workspace">Already a partner? Sign in</a></div> : null}
             <h3>{mode === 'register' ? 'Join the HAMLET Partner Network' : 'Sign in to your workspace'}</h3>
-            {mode === 'register' && <p className="agent-muted">Create your own account to submit shortlets and track reviews. New partner accounts are pending until HAMLET approves them. Admin access is granted separately by HAMLET and cannot be self-selected.</p>}
+            {mode === 'register' && <p className="agent-muted">Create your partner account and start using your workspace immediately. Admin and owner privileges are assigned separately by HAMLET and cannot be self-selected.</p>}
             {mode === 'register' && <>
               <label className="agent-field"><span>Full name</span><input required autoComplete="name" value={authForm.displayName} onChange={(event) => setAuthForm({ ...authForm, displayName: event.target.value })} /></label>
               <label className="agent-field"><span>Phone</span><input required autoComplete="tel" value={authForm.phone} onChange={(event) => setAuthForm({ ...authForm, phone: event.target.value })} /></label>
@@ -502,41 +519,36 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
         <div className="agent-authenticated">
           <div className="agent-session-bar">
             <div><strong>{dashboard.profile?.display_name || session.user.email}</strong><span>{session.user.email}</span></div>
-            <div className="agent-session-actions"><span className={`agent-status ${dashboard.profile?.role === 'agent' ? dashboard.profile.agent_status : 'active'}`}>{dashboard.profile?.role === 'agent' ? `${dashboard.profile.agent_status} partner` : dashboard.profile?.role}</span><button className="agent-secondary" type="button" onClick={handleSignOut}>Sign out</button></div>
+            <div className="agent-session-actions"><span className={`agent-status ${dashboard.profile?.account_status ?? 'active'}`}>{dashboard.profile?.account_status ?? 'active'} · {dashboard.profile?.role}</span><button className="agent-secondary" type="button" onClick={handleSignOut}>Sign out</button></div>
           </div>
-          {dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active' && <div className="agent-alert info">Your application is {dashboard.profile.agent_status}. Property submission, offer acceptance, and assigned workflows become available after HAMLET approval.</div>}
+          {dashboard.profile && dashboard.profile.account_status !== 'active' && <div className="agent-alert error">This partner account is {dashboard.profile.account_status}. {dashboard.profile.account_status_reason || 'Contact HAMLET support for assistance.'} Workspace actions are disabled.</div>}
           {error && <p className="agent-alert error">{error}</p>}
           {message && <p className="agent-alert success">{message}</p>}
 
           <div className="agent-workspace-grid">
-            {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
-            {(dashboard.profile?.role === 'admin' || dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent') && <BookingRequestQueue role={dashboard.profile.role} partnerActive={dashboard.profile.role !== 'agent' || dashboard.profile.agent_status === 'active'} />}
+            {dashboard.profile?.role === 'admin' && <><PropertyIntakeQueue /><section className="agent-panel agent-wide-panel"><div className="agent-panel-heading"><div><h3>Partner account controls</h3><p>Open registration is on. Suspend, restore, or deactivate accounts when needed.</p></div><button className="agent-secondary" type="button" onClick={() => void loadPartnerAccounts()}>Refresh accounts</button></div><div className="agent-record-list">{dashboard.partnerAccounts.map((partner) => <article className="agent-record agent-record-title" key={partner.id}><div><strong>{partner.display_name || partner.id}</strong><span>{partner.role} · {partner.city} · {partner.account_status}{partner.account_status_reason ? ` · ${partner.account_status_reason}` : ''}</span></div><div className="agent-session-actions">{partner.account_status === 'active' ? <button className="agent-secondary" type="button" onClick={() => void setPartnerStatus(partner.id, 'suspended')}>Suspend</button> : <button className="agent-primary" type="button" onClick={() => void setPartnerStatus(partner.id, 'active')}>Restore</button>}<button className="agent-secondary" type="button" onClick={() => void setPartnerStatus(partner.id, 'deactivated')}>Deactivate</button></div></article>)}</div></section></>}
+            {(dashboard.profile?.role === 'admin' || dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent') && <BookingRequestQueue role={dashboard.profile.role} partnerActive={dashboard.profile.role === 'admin' || dashboard.profile.account_status === 'active'} />}
 
-            {dashboard.profile?.role === 'admin' && <section className="agent-panel agent-wide-panel">
-              <h3>Partner applications review</h3>
-              <p>Admin-only approvals are enforced by the review RPC, not by this interface.</p>
-              {dashboard.applications.length === 0 ? <p className="agent-empty">No pending applications.</p> : <div className="agent-record-list">{dashboard.applications.map((application) => <article className="agent-record agent-record-title" key={application.id}><div><strong>{application.display_name}</strong><span>{application.city} · {application.experience}</span></div><div className="agent-session-actions"><button className="agent-primary" type="button" onClick={() => void reviewApplication(application.id, 'active')}>Approve</button><button className="agent-secondary" type="button" onClick={() => void reviewApplication(application.id, 'rejected')}>Reject</button></div></article>)}</div>}
-            </section>}
 
-            {(dashboard.profile?.role === 'owner' || (dashboard.profile?.role === 'agent' && dashboard.profile.agent_status === 'active')) && <form className="agent-panel agent-wide-panel hm-full-property-form" onSubmit={handlePropertySubmit}>
+            {(dashboard.profile?.account_status === 'active' && (dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent')) && <form className="agent-panel agent-wide-panel hm-full-property-form" onSubmit={handlePropertySubmit}>
               <h3>Submit a property</h3>
               <p>Complete the full property intake here. Submissions stay private to authorised reviewers until HAMLET completes its checks and approves publication.</p>
-              <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
+              <label className="agent-field"><span>Property title</span><input required disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.title} onChange={(event) => setPropertyForm({ ...propertyForm, title: event.target.value })} /></label>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>City</span><select disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.city} onChange={(event) => setPropertyForm({ ...propertyForm, city: event.target.value })}><option>Lagos</option><option>Abuja</option><option>Ibadan</option></select></label>
-                <label className="agent-field"><span>Area</span><input required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.area} onChange={(event) => setPropertyForm({ ...propertyForm, area: event.target.value })} /></label>
+                <label className="agent-field"><span>City</span><select disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.city} onChange={(event) => setPropertyForm({ ...propertyForm, city: event.target.value })}><option>Lagos</option><option>Abuja</option><option>Ibadan</option></select></label>
+                <label className="agent-field"><span>Area</span><input required disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.area} onChange={(event) => setPropertyForm({ ...propertyForm, area: event.target.value })} /></label>
               </div>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>Property type</span><select disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.propertyType} onChange={(event) => setPropertyForm({ ...propertyForm, propertyType: event.target.value })}><option>Apartment</option><option>Duplex</option><option>Villa</option><option>Townhouse</option></select></label>
-                <label className="agent-field"><span>Bedrooms</span><input required min="1" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.bedrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bedrooms: event.target.value })} /></label>
+                <label className="agent-field"><span>Property type</span><select disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.propertyType} onChange={(event) => setPropertyForm({ ...propertyForm, propertyType: event.target.value })}><option>Apartment</option><option>Duplex</option><option>Villa</option><option>Townhouse</option></select></label>
+                <label className="agent-field"><span>Bedrooms</span><input required min="1" type="number" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.bedrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bedrooms: event.target.value })} /></label>
               </div>
-              <label className="agent-field"><span>Indicative nightly rate (NGN)</span><input required min="0" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.nightlyRate} onChange={(event) => setPropertyForm({ ...propertyForm, nightlyRate: event.target.value })} /></label>
+              <label className="agent-field"><span>Indicative nightly rate (NGN)</span><input required min="0" type="number" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.nightlyRate} onChange={(event) => setPropertyForm({ ...propertyForm, nightlyRate: event.target.value })} /></label>
               <div className="agent-fields-row">
-                <label className="agent-field"><span>Bathrooms</span><input required min="1" max="30" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.bathrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bathrooms: event.target.value })} /></label>
-                <label className="agent-field"><span>Maximum guests</span><input required min="1" max="100" type="number" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.maxGuests} onChange={(event) => setPropertyForm({ ...propertyForm, maxGuests: event.target.value })} /></label>
+                <label className="agent-field"><span>Bathrooms</span><input required min="1" max="30" type="number" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.bathrooms} onChange={(event) => setPropertyForm({ ...propertyForm, bathrooms: event.target.value })} /></label>
+                <label className="agent-field"><span>Maximum guests</span><input required min="1" max="100" type="number" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.maxGuests} onChange={(event) => setPropertyForm({ ...propertyForm, maxGuests: event.target.value })} /></label>
               </div>
-              <label className="agent-field"><span>Existing listing URL (optional)</span><input type="url" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.listingUrl} onChange={(event) => setPropertyForm({ ...propertyForm, listingUrl: event.target.value })} placeholder="Existing listing link" /></label>
-              <label className="agent-field"><span>Photos / walkthrough URL</span><input required type="url" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} value={propertyForm.photosUrl} onChange={(event) => setPropertyForm({ ...propertyForm, photosUrl: event.target.value })} placeholder="Link to photos or walkthrough video" /></label>
+              <label className="agent-field"><span>Existing listing URL (optional)</span><input type="url" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.listingUrl} onChange={(event) => setPropertyForm({ ...propertyForm, listingUrl: event.target.value })} placeholder="Existing listing link" /></label>
+              <label className="agent-field"><span>Photos / walkthrough URL</span><input required type="url" disabled={dashboard.profile?.account_status !== 'active'} value={propertyForm.photosUrl} onChange={(event) => setPropertyForm({ ...propertyForm, photosUrl: event.target.value })} placeholder="Link to photos or walkthrough video" /></label>
               <div className="agent-fields-row">
                 <label className="agent-field"><span>Availability</span><select value={propertyForm.availability} onChange={(event) => setPropertyForm({ ...propertyForm, availability: event.target.value })}><option>Confirm with me</option><option>Available now</option><option>Available from a date</option></select></label>
                 <label className="agent-field"><span>Available from (if known)</span><input type="date" value={propertyForm.availableFrom} onChange={(event) => setPropertyForm({ ...propertyForm, availableFrom: event.target.value })} /></label>
@@ -546,20 +558,20 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
                 <p>Only select facilities the property actually provides.</p>
                 <div className="agent-checklist-grid">
                   {['Air conditioning', 'Reliable power', 'Generator / inverter', 'Wi-Fi', 'Swimming pool', 'Parking', 'Kitchen', 'Washing machine', 'Security', 'Workspace', 'Balcony', 'Family-friendly'].map((amenity) => (
-                    <label key={amenity}><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.amenities.includes(amenity)} onChange={(event) => setPropertyForm({ ...propertyForm, amenities: event.target.checked ? [...propertyForm.amenities, amenity] : propertyForm.amenities.filter((item) => item !== amenity) })} /><span>{amenity}</span></label>
+                    <label key={amenity}><input type="checkbox" disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.amenities.includes(amenity)} onChange={(event) => setPropertyForm({ ...propertyForm, amenities: event.target.checked ? [...propertyForm.amenities, amenity] : propertyForm.amenities.filter((item) => item !== amenity) })} /><span>{amenity}</span></label>
                   ))}
                 </div>
                 <h4>Documentation checklist</h4>
                 <p>This is a self-report, not proof of verification. HAMLET reviews evidence before approving a listing.</p>
                 <div className="agent-checklist-grid">
-                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasApprovedBuildingPlan} onChange={(event) => setPropertyForm({ ...propertyForm, hasApprovedBuildingPlan: event.target.checked })} /><span>Approved building plan available</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasCofo} onChange={(event) => setPropertyForm({ ...propertyForm, hasCofo: event.target.checked })} /><span>Certificate of Occupancy (C of O)</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasGovernorsConsent} onChange={(event) => setPropertyForm({ ...propertyForm, hasGovernorsConsent: event.target.checked })} /><span>Governor's consent</span></label>
-                  <label><input type="checkbox" disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.hasOtherDocuments} onChange={(event) => setPropertyForm({ ...propertyForm, hasOtherDocuments: event.target.checked })} /><span>Other property documents</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.hasApprovedBuildingPlan} onChange={(event) => setPropertyForm({ ...propertyForm, hasApprovedBuildingPlan: event.target.checked })} /><span>Approved building plan available</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.hasCofo} onChange={(event) => setPropertyForm({ ...propertyForm, hasCofo: event.target.checked })} /><span>Certificate of Occupancy (C of O)</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.hasGovernorsConsent} onChange={(event) => setPropertyForm({ ...propertyForm, hasGovernorsConsent: event.target.checked })} /><span>Governor's consent</span></label>
+                  <label><input type="checkbox" disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.hasOtherDocuments} onChange={(event) => setPropertyForm({ ...propertyForm, hasOtherDocuments: event.target.checked })} /><span>Other property documents</span></label>
                 </div>
-                <label className="agent-authority-check"><input type="checkbox" required disabled={dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active'} checked={propertyForm.confirmsAuthorityToSubmit} onChange={(event) => setPropertyForm({ ...propertyForm, confirmsAuthorityToSubmit: event.target.checked })} /><span>I own this property or have the owner's permission to submit it to HAMLET.</span></label>
+                <label className="agent-authority-check"><input type="checkbox" required disabled={dashboard.profile?.account_status !== 'active'} checked={propertyForm.confirmsAuthorityToSubmit} onChange={(event) => setPropertyForm({ ...propertyForm, confirmsAuthorityToSubmit: event.target.checked })} /><span>I own this property or have the owner's permission to submit it to HAMLET.</span></label>
               </div>
-              <button className="agent-primary" type="submit" disabled={busy || (dashboard.profile?.role === 'agent' && dashboard.profile.agent_status !== 'active')}>Submit for review</button>
+              <button className="agent-primary" type="submit" disabled={busy || (dashboard.profile?.account_status !== 'active')}>Submit for review</button>
             </form>}
 
             <section className="agent-panel">
@@ -635,7 +647,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
                   const currentVersion = offer.versions?.find((version) => version.id === offer.current_version_id)
                   return <article className="agent-offer" key={offer.id}>
                     <div><span className="agent-eyebrow">{offer.offer_kind === 'agent_payout' ? 'FIXED PARTNER PAYOUT' : 'OWNER NET-RATE OFFER'}</span><h4>{offer.property?.title ?? 'Assigned property'}</h4><p>{offer.property?.city ?? ''} · Version {currentVersion?.version ?? '?'}</p></div>
-                    <div className="agent-offer-terms"><strong>{currentVersion ? formatNaira(currentVersion.amount) : 'Terms unavailable'}</strong><span>{offer.offer_kind === 'agent_payout' ? 'agreed partner fee' : 'owner net rate'} · NGN</span><button className="agent-primary" type="button" disabled={busy || !currentVersion || dashboard.profile?.agent_status !== 'active'} onClick={() => void acceptOffer(offer)}>Accept v{currentVersion?.version ?? '?'}</button></div>
+                    <div className="agent-offer-terms"><strong>{currentVersion ? formatNaira(currentVersion.amount) : 'Terms unavailable'}</strong><span>{offer.offer_kind === 'agent_payout' ? 'agreed partner fee' : 'owner net rate'} · NGN</span><button className="agent-primary" type="button" disabled={busy || !currentVersion || dashboard.profile?.account_status !== 'active'} onClick={() => void acceptOffer(offer)}>Accept v{currentVersion?.version ?? '?'}</button></div>
                   </article>
                 })}
               </div>

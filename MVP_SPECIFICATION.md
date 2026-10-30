@@ -51,7 +51,7 @@ Example: for a ₦100,000 accommodation subtotal, HAMLET's guest service fee is 
 
 ### HAMLET Partner Network
 - One partner registration/sign-in experience for owners, agents, property managers, shortlet operators, co-hosts/hospitality operators, referral partners and other authorised partners.
-- Partner approval status and role-based access.
+- Open partner registration with immediate account activation and role-based access; admins can suspend, restore or deactivate partner accounts.
 - Submit properties and track review.
 - Explicit property authorisation/assignment and revocation.
 - View only own profile, authorised properties, permitted booking data and specifically agreed commissions.
@@ -79,7 +79,7 @@ Example: for a ₦100,000 accommodation subtotal, HAMLET's guest service fee is 
 - Exact processing-fee treatment remains configurable/undecided and must not be double charged.
 
 ### Admin and accountability
-- Review properties and partner applications.
+- Review and moderate property listings; manage partner account status (suspend, restore or deactivate).
 - Manage bookings, payment records, cancellations and refunds.
 - Report, assign, investigate, escalate and close issues with evidence and documented decisions.
 - Suspend listings/partners when justified.
@@ -134,7 +134,7 @@ The 3% fee is calculated on the accommodation subtotal, not on refundable deposi
 ## 8. Implementation order
 
 1. Stabilise current branch: pass frontend build/lint/unit tests and Supabase migration/RLS tests.
-2. Verify Supabase configuration, authentication, role permissions, admin provisioning and partner approval.
+2. Verify Supabase configuration, authentication, role permissions, admin provisioning and partner account moderation.
 3. Complete property intake, evidence review, duplicate handling, corrections and approved-only publication.
 4. Implement booking data model and request-to-book lifecycle with overlap prevention and expiry rules.
 5. Select provider and implement server-side payment confirmation, central pricing, ledger and reconciliation.
