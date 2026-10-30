@@ -79,6 +79,7 @@ type Dashboard = {
   notifications: AgentNotification[]
   agents: AgentDirectoryEntry[]
   applications: ReviewApplication[]
+  partnerAccounts: Array<{ id: string; display_name: string; city: string; role: 'agent' | 'owner'; account_status: 'active' | 'suspended' | 'deactivated'; account_status_reason: string | null }>
 }
 
 const emptyDashboard: Dashboard = {
@@ -89,6 +90,7 @@ const emptyDashboard: Dashboard = {
   notifications: [],
   agents: [],
   applications: [],
+  partnerAccounts: [],
 }
 
 const formatNaira = (amount: number) => `₦${amount.toLocaleString('en-NG')}`
@@ -160,6 +162,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       notifications: (notificationsResult.data ?? []) as AgentNotification[],
       agents: [],
       applications: [],
+      partnerAccounts: [],
     })
 
   }, [])
@@ -382,6 +385,16 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
     else { setMessage(`Partner account ${status}.`); await refresh() }
   }
 
+  const loadPartnerAccounts = async () => {
+    if (!supabase || dashboard.profile?.role !== 'admin') return
+    const { data, error: partnersError } = await supabase.from('profiles')
+      .select('id, display_name, city, role, account_status, account_status_reason')
+      .in('role', ['agent', 'owner'])
+      .order('created_at', { ascending: false })
+    if (partnersError) setError(partnersError.message)
+    else setDashboard((current) => ({ ...current, partnerAccounts: data ?? [] }))
+  }
+
   const loadAgentsForProperty = async (propertyId: string) => {
     if (!supabase) return
     const { data, error: agentsError } = await supabase.rpc('list_property_agents', { p_property_id: propertyId })
@@ -509,7 +522,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
           {message && <p className="agent-alert success">{message}</p>}
 
           <div className="agent-workspace-grid">
-            {dashboard.profile?.role === 'admin' && <PropertyIntakeQueue />}
+            {dashboard.profile?.role === 'admin' && <><PropertyIntakeQueue /><section className="agent-panel agent-wide-panel"><div className="agent-panel-heading"><div><h3>Partner account controls</h3><p>Open registration is on. Suspend, restore, or deactivate accounts when needed.</p></div><button className="agent-secondary" type="button" onClick={() => void loadPartnerAccounts()}>Refresh accounts</button></div><div className="agent-record-list">{dashboard.partnerAccounts.map((partner) => <article className="agent-record agent-record-title" key={partner.id}><div><strong>{partner.display_name || partner.id}</strong><span>{partner.role} · {partner.city} · {partner.account_status}{partner.account_status_reason ? ` · ${partner.account_status_reason}` : ''}</span></div><div className="agent-session-actions">{partner.account_status === 'active' ? <button className="agent-secondary" type="button" onClick={() => void setPartnerStatus(partner.id, 'suspended')}>Suspend</button> : <button className="agent-primary" type="button" onClick={() => void setPartnerStatus(partner.id, 'active')}>Restore</button>}<button className="agent-secondary" type="button" onClick={() => void setPartnerStatus(partner.id, 'deactivated')}>Deactivate</button></div></article>)}</div></section></>}
             {(dashboard.profile?.role === 'admin' || dashboard.profile?.role === 'owner' || dashboard.profile?.role === 'agent') && <BookingRequestQueue role={dashboard.profile.role} partnerActive={dashboard.profile.role === 'admin' || dashboard.profile.account_status === 'active'} />}
 
 }
