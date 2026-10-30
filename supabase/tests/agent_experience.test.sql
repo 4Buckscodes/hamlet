@@ -65,7 +65,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', 'e0000000-0000-4000-8000-000000000002', true);
 select lives_ok(
-  $select public.assign_property_agent('e1000000-0000-4000-8000-000000000002', 'e0000000-0000-4000-8000-000000000005')$,
+  $$select public.assign_property_agent('e1000000-0000-4000-8000-000000000002', 'e0000000-0000-4000-8000-000000000005')$$,
   'owner can assign a newly registered active partner'
 );
 select lives_ok(
@@ -91,7 +91,7 @@ select is((select count(*)::integer from public.agent_offer_versions v join publ
 
 select set_config('request.jwt.claim.sub', 'e0000000-0000-4000-8000-000000000004', true);
 select lives_ok(
-  $select public.set_partner_account_status('e0000000-0000-4000-8000-000000000005', 'suspended', 'Policy review')$,
+  $$select public.set_partner_account_status('e0000000-0000-4000-8000-000000000005', 'suspended', 'Policy review')$$,
   'admin can suspend an active partner account'
 );
 select is((select account_status from public.profiles where id = 'e0000000-0000-4000-8000-000000000005'), 'suspended', 'suspended account status is persisted');
