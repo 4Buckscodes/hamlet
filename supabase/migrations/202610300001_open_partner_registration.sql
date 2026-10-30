@@ -79,6 +79,26 @@ with check (
   and public.is_active_partner()
 );
 
+-- Owner accounts are also allowed to re-submit drafts and correction workflows.
+drop policy if exists properties_owner_submit_draft on public.properties;
+create policy properties_owner_submit_draft on public.properties
+for update to authenticated
+using (
+  submitted_by = auth.uid()
+  and listing_status = 'draft'
+  and public.is_active_partner()
+  and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
+)
+with check (
+  submitted_by = auth.uid()
+  and owner_id is null
+  and listing_status = 'submitted'
+  and confirms_authority_to_submit = true
+  and length(trim(photos_url)) > 0
+  and public.is_active_partner()
+  and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
+);
+
 -- Only the record owner may suspend/reactivate/deactivate an account through
 -- this RPC. Role changes are intentionally not part of this function.
 create or replace function public.set_partner_account_status(
