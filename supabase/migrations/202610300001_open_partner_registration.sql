@@ -2,6 +2,8 @@
 -- immediately. Account moderation remains separate from property verification.
 -- Public signup still receives only the agent role; owner/admin are never self-selected.
 
+alter table public.profiles alter column agent_status set default 'active';
+
 alter table public.profiles
   add column if not exists account_status text not null default 'active'
     check (account_status in ('active', 'suspended', 'deactivated')),
@@ -66,6 +68,53 @@ as $$
       and account_status = 'active'
   );
 $$;
+
+-- Assignment and directory eligibility follows the account moderation flag,
+-- not the retired application-review status.
+create or replace function public.assign_property_agent(p_property_id uuid, p_agent_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $
+begin
+  if not (public.is_admin() or public.is_property_owner(p_property_id)) then
+    raise exception 'Not authorized to assign this property';
+  end if;
+  if not exists (
+    select 1 from public.profiles
+    where id = p_agent_id and role = 'agent' and account_status = 'active'
+  ) then
+    raise exception 'Agent is not active';
+  end if;
+  insert into public.property_assignments (property_id, agent_id, assigned_by)
+  values (p_property_id, p_agent_id, auth.uid())
+  on conflict do nothing;
+  if found then
+    insert into public.agent_notifications (agent_id, event_type, message)
+    values (p_agent_id, 'property_assigned', 'A property has been assigned to your agent account.');
+  end if;
+end;
+$;
+
+create or replace function public.list_property_agents(p_property_id uuid)
+returns table (agent_id uuid, display_name text, city text)
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $
+begin
+  if not (public.is_admin() or public.is_property_owner(p_property_id)) then
+    raise exception 'Not authorized to list agents for this property';
+  end if;
+  return query
+    select p.id, p.display_name, p.city
+    from public.profiles p
+    where p.role = 'agent' and p.account_status = 'active'
+    order by p.display_name;
+end;
+$;
 
 -- All authenticated partners, including owners, can submit a property draft.
 -- Submission still requires the explicit authority declaration and media link.
