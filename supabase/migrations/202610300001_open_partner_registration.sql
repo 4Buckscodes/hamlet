@@ -76,7 +76,7 @@ returns void
 language plpgsql
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 begin
   if not (public.is_admin() or public.is_property_owner(p_property_id)) then
     raise exception 'Not authorized to assign this property';
@@ -95,7 +95,7 @@ begin
     values (p_agent_id, 'property_assigned', 'A property has been assigned to your agent account.');
   end if;
 end;
-$;
+$$;
 
 create or replace function public.list_property_agents(p_property_id uuid)
 returns table (agent_id uuid, display_name text, city text)
@@ -103,7 +103,7 @@ language plpgsql
 stable
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 begin
   if not (public.is_admin() or public.is_property_owner(p_property_id)) then
     raise exception 'Not authorized to list agents for this property';
@@ -114,7 +114,7 @@ begin
     where p.role = 'agent' and p.account_status = 'active'
     order by p.display_name;
 end;
-$;
+$$;
 
 -- All authenticated partners, including owners, can submit a property draft.
 -- Submission still requires the explicit authority declaration and media link.
