@@ -116,6 +116,13 @@ with check (
   and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
 );
 
+-- Explicitly deny partner writes while an account is suspended or deactivated,
+-- including writes made through the legacy admin/owner listing UI.
+create policy profiles_admin_update_partner_accounts on public.profiles
+for update to authenticated
+using (public.is_admin() and role in ('agent', 'owner'))
+with check (public.is_admin() and role in ('agent', 'owner'));
+
 -- Only the record owner may suspend/reactivate/deactivate an account through
 -- this RPC. Role changes are intentionally not part of this function.
 create or replace function public.set_partner_account_status(
