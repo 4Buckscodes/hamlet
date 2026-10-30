@@ -58,7 +58,7 @@ select set_config('request.jwt.claim.sub', 'e9000000-0000-4000-8000-000000000001
 select is(public.is_active_agent(), true, 'restored partner regains active permissions');
 select throws_ok(
   $$select public.set_partner_account_status('e9000000-0000-4000-8000-000000000001', 'deactivated', 'Try to escalate')$$,
-  '42501', null, 'partner cannot change own account status'
+  'P0001', 'Admin role required', 'partner cannot change own account status'
 );
 
 select * from finish();
