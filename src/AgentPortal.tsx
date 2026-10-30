@@ -9,7 +9,6 @@ import BookingRequestQueue from './BookingRequestQueue'
 type AgentProfile = {
   role: 'agent' | 'owner' | 'admin'
   display_name: string
-  agent_status: 'pending' | 'active' | 'rejected'
   account_status: 'active' | 'suspended' | 'deactivated'
   account_status_reason: string | null
   city: string
@@ -130,7 +129,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
     if (!supabase) return
 
     const [profileResult, listingsResult, offersResult, earningsResult, notificationsResult] = await Promise.all([
-      supabase.from('profiles').select('role, display_name, agent_status, account_status, account_status_reason, city, experience').eq('id', userId).single(),
+      supabase.from('profiles').select('role, display_name, account_status, account_status_reason, city, experience').eq('id', userId).single(),
       supabase.from('properties').select('id, submitted_by, owner_id, title, city, area, property_type, bedrooms, bathrooms, max_guests, listing_url, photos_url, amenities, has_approved_building_plan, has_cofo, has_governors_consent, has_other_documents, confirms_authority_to_submit, listing_status, correction_request, nightly_rate').order('updated_at', { ascending: false }),
       supabase.from('agent_offers').select('id, property_id, offer_kind, status, current_version_id, property:properties(title, city)').order('created_at', { ascending: false }),
       supabase.from('agent_earnings_view').select('*').order('check_in', { ascending: false }),
