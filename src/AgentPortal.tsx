@@ -62,7 +62,6 @@ type Earning = {
 }
 
 type AgentDirectoryEntry = { agent_id: string; display_name: string; city: string }
-type ReviewApplication = { id: string; display_name: string; city: string; experience: string; agent_status: 'pending' | 'active' | 'rejected' }
 type AgentNotification = {
   id: string
   event_type: string
@@ -78,7 +77,6 @@ type Dashboard = {
   earnings: Earning[]
   notifications: AgentNotification[]
   agents: AgentDirectoryEntry[]
-  applications: ReviewApplication[]
   partnerAccounts: Array<{ id: string; display_name: string; city: string; role: 'agent' | 'owner'; account_status: 'active' | 'suspended' | 'deactivated'; account_status_reason: string | null }>
 }
 
@@ -89,7 +87,6 @@ const emptyDashboard: Dashboard = {
   earnings: [],
   notifications: [],
   agents: [],
-  applications: [],
   partnerAccounts: [],
 }
 
@@ -161,7 +158,6 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       earnings: (earningsResult.data ?? []) as Earning[],
       notifications: (notificationsResult.data ?? []) as AgentNotification[],
       agents: [],
-      applications: [],
       partnerAccounts: [],
     })
 
