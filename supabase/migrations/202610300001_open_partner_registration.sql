@@ -120,6 +120,10 @@ with check (
 -- partner writes are blocked for suspended/deactivated accounts.
 drop policy if exists properties_active_partner_update_corrections on public.properties;
 drop policy if exists properties_agent_update_corrections on public.properties;
+drop policy if exists properties_owner_submit_draft on public.properties;
+
+-- One consolidated update policy prevents legacy permissive policies from OR-ing
+-- around account suspension, while preserving authorised reviewer workflows.
 create policy properties_active_partner_update_corrections on public.properties
 for update to authenticated
 using (
@@ -127,8 +131,7 @@ using (
   or (
     public.is_active_partner()
     and (
-      submitted_by = auth.uid()
-      and listing_status in ('draft', 'correction_requested')
+      (submitted_by = auth.uid() and listing_status in ('draft', 'correction_requested'))
       or public.is_property_owner(id)
     )
   )
