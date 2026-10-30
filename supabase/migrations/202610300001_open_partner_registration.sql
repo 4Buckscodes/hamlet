@@ -150,8 +150,9 @@ with check (
 -- including writes made through the legacy admin/owner listing UI.
 create policy profiles_admin_update_partner_accounts on public.profiles
 for update to authenticated
-using (public.is_admin() and role in ('agent', 'owner'))
-with check (public.is_admin() and role in ('agent', 'owner'));
+using (public.is_admin() and role in ('agent', 'owner') and account_status = 'active')
+with check (public.is_admin() and role in ('agent', 'owner') and account_status in ('active', 'suspended', 'deactivated'));
+
 
 -- Only the record owner may suspend/reactivate/deactivate an account through
 -- this RPC. Role changes are intentionally not part of this function.
