@@ -41,14 +41,31 @@ language sql
 stable
 security definer
 set search_path = public, pg_temp
-as $$
+as $
   select exists (
     select 1 from public.profiles
     where id = auth.uid()
       and role in ('agent', 'owner')
       and account_status = 'active'
   );
-$$;
+$;
+
+-- Use the account moderation state for every existing partner workflow,
+-- including offers, bookings and owner-to-agent assignment.
+create or replace function public.is_active_agent()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid()
+      and role = 'agent'
+      and account_status = 'active'
+  );
+$;
 
 -- All authenticated partners, including owners, can submit a property draft.
 -- Submission still requires the explicit authority declaration and media link.
