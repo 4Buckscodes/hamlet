@@ -116,6 +116,33 @@ with check (
   and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
 );
 
+-- Keep listing review and owner correction requests available, while ensuring
+-- partner writes are blocked for suspended/deactivated accounts.
+drop policy if exists properties_active_partner_update_corrections on public.properties;
+drop policy if exists properties_agent_update_corrections on public.properties;
+create policy properties_active_partner_update_corrections on public.properties
+for update to authenticated
+using (
+  public.is_admin()
+  or (
+    public.is_active_partner()
+    and (
+      submitted_by = auth.uid()
+      and listing_status in ('draft', 'correction_requested')
+      or public.is_property_owner(id)
+    )
+  )
+)
+with check (
+  public.is_admin()
+  or (
+    public.is_active_partner()
+    and submitted_by = auth.uid()
+    and owner_id is null
+    and listing_status in ('draft', 'submitted', 'correction_requested')
+  )
+);
+
 -- Explicitly deny partner writes while an account is suspended or deactivated,
 -- including writes made through the legacy admin/owner listing UI.
 create policy profiles_admin_update_partner_accounts on public.profiles
