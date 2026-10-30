@@ -165,6 +165,15 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
       partnerAccounts: [],
     })
 
+    if (profileResult.data?.role === 'admin') {
+      const { data: partnerAccounts, error: partnersError } = await supabase.from('profiles')
+        .select('id, display_name, city, role, account_status, account_status_reason')
+        .in('role', ['agent', 'owner'])
+        .order('created_at', { ascending: false })
+      if (partnersError) throw partnersError
+      setDashboard((current) => ({ ...current, partnerAccounts: (partnerAccounts ?? []) as Dashboard['partnerAccounts'] }))
+    }
+
   }, [])
 
   useEffect(() => {
