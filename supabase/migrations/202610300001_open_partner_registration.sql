@@ -171,8 +171,9 @@ drop policy if exists properties_active_partner_update_corrections on public.pro
 drop policy if exists properties_agent_update_corrections on public.properties;
 drop policy if exists properties_owner_submit_draft on public.properties;
 
--- One consolidated update policy prevents legacy permissive policies from OR-ing
--- around account suspension, while preserving authorised reviewer workflows.
+-- A single policy owns all partner property updates. Admin moderation/review
+-- bypasses partner account checks; all partner-originated writes require active
+-- account status, preventing a legacy policy from OR-ing around suspension.
 create policy properties_active_partner_update_corrections on public.properties
 for update to authenticated
 using (
