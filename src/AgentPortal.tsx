@@ -236,7 +236,7 @@ export default function AgentPortal({ view = 'join' }: { view?: AgentPortalView 
         })
         if (signupError) throw signupError
         if (data.session?.user.id) await loadDashboard(data.session.user.id)
-        else setMessage('Registration received. Verify your email, then sign in to continue onboarding.')
+        else setMessage('Your account has been created. Check your email to verify it, then sign in to access your partner workspace.')
       } else {
         const { data, error: signinError } = await supabase.auth.signInWithPassword({ email: authForm.email, password: authForm.password })
         if (signinError) throw signinError
