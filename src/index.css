@@ -105,10 +105,6 @@ p {
   :where(button:not(:disabled), .btn, .hm-primary-button, .hm-profile-button,
     .hm-search-submit, .hm-filter-button, .hm-category, .city-pill, .intent-card,
     .step-badge, .hm-clear-filters, .hm-stay-bottom a, .hm-stay-bottom button,
-    .hm-menu-toggle) :where(*) { pointer-events: none; }
-  :where(button:not(:disabled), .btn, .hm-primary-button, .hm-profile-button,
-    .hm-search-submit, .hm-filter-button, .hm-category, .city-pill, .intent-card,
-    .step-badge, .hm-clear-filters, .hm-stay-bottom a, .hm-stay-bottom button,
     .hm-menu-toggle):hover {
     transform: translateY(-2px);
   }
