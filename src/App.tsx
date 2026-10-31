@@ -1,6 +1,7 @@
 import MarketplaceHome from './MarketplaceHome'
 import AgentPortal from './AgentPortal'
 import './App.css'
+import { useGlobalMotion } from './useGlobalMotion'
 
 function PageShell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   return (
@@ -25,6 +26,7 @@ function PageShell({ title, description, children }: { title: string; descriptio
 const legacyHashRoutes: Record<string, string> = { '#explore': '/explore', '#how-it-works': '/how-it-works' }
 
 export default function App() {
+  useGlobalMotion()
   const path = window.location.pathname.replace(/\/$/, '') || '/'
 
   // Old bookmarks like /#explore now go to their own pages
