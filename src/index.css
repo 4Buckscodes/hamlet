@@ -50,3 +50,79 @@ h3,
 p {
   margin-top: 0;
 }
+
+/* HAMLET global motion system — progressive enhancement only. */
+:root {
+  --hm-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hm-motion-duration: 760ms;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-hm-reveal="pending"] {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    transition: opacity var(--hm-motion-duration) var(--hm-motion-ease),
+      transform var(--hm-motion-duration) var(--hm-motion-ease);
+    will-change: opacity, transform;
+  }
+  [data-hm-reveal="visible"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
+  }
+  [data-hm-reveal="pending"][data-hm-direction="left"] { transform: translate3d(-18px, 0, 0); }
+  [data-hm-reveal="pending"][data-hm-direction="right"] { transform: translate3d(18px, 0, 0); }
+  [data-hm-reveal="pending"][data-hm-direction="none"] { transform: none; }
+  [data-hm-reveal-delay="1"] { transition-delay: 90ms; }
+  [data-hm-reveal-delay="2"] { transition-delay: 180ms; }
+  [data-hm-reveal-delay="3"] { transition-delay: 270ms; }
+  [data-hm-reveal-delay="4"] { transition-delay: 360ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Premium, consistent interaction feedback for actions and navigation. */
+:where(button, .btn, .hm-primary-button, .hm-profile-button, .hm-search-submit,
+  .hm-filter-button, .hm-category, .city-pill, .intent-card, .step-badge,
+  .hm-clear-filters, .hm-stay-bottom a, .hm-stay-bottom button, .hm-menu-toggle,
+  .hm-header nav a, .hm-page-header nav a, .hm-page-brand, .hm-page-footer a,
+  .main-nav a, .footer-links a, .hm-footer a, .hm-text-link) {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 220ms var(--hm-motion-ease),
+    background-color 220ms var(--hm-motion-ease),
+    border-color 220ms var(--hm-motion-ease),
+    box-shadow 260ms var(--hm-motion-ease),
+    transform 260ms var(--hm-motion-ease),
+    opacity 220ms var(--hm-motion-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  :where(button:not(:disabled), .btn, .hm-primary-button, .hm-profile-button,
+    .hm-search-submit, .hm-filter-button, .hm-category, .city-pill, .intent-card,
+    .step-badge, .hm-clear-filters, .hm-stay-bottom a, .hm-stay-bottom button,
+    .hm-menu-toggle):hover {
+    transform: translateY(-2px);
+  }
+  :where(.hm-header nav a, .hm-page-header nav a, .main-nav a, .footer-links a,
+    .hm-footer a, .hm-text-link):hover {
+    color: #e5c77f;
+  }
+}
+:where(button:not(:disabled), .btn, .hm-primary-button, .hm-profile-button,
+  .hm-search-submit, .hm-filter-button, .hm-category, .city-pill, .intent-card,
+  .step-badge, .hm-clear-filters, .hm-stay-bottom a, .hm-stay-bottom button,
+  .hm-menu-toggle):active {
+  transform: translateY(0) scale(0.975);
+}
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #d7b571;
+  outline-offset: 4px;
+}
+:where(button:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
+}
